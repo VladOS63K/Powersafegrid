@@ -46,20 +46,20 @@ repositories {
             }
         }
         filter {
-            includeGroup 'com.simibubi'
-            includeGroup 'net.createmod'
-            includeGroup 'dev.engine-room'
+            includeGroupAndSubgroups 'com.simibubi'
+            includeGroupAndSubgroups 'net.createmod'
+            includeGroupAndSubgroups 'dev.engine-room'
         }
     }
     maven {
         name = 'Ithundxr'
         url = 'https://maven.ithundxr.dev/snapshots'
-        content { includeGroup 'com.tterrag.registrate' }
+        content { includeGroupAndSubgroups 'com.tterrag.registrate' }
     }
     maven {
         name = 'Architectury'
         url = 'https://maven.architectury.dev/'
-        content { includeGroup 'dev.architectury' }
+        content { includeGroupAndSubgroups 'dev.architectury' }
     }
 }
 

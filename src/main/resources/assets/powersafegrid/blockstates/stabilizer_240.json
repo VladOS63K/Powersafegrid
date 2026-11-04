@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "tripped=false,facing=north": { "model": "powersafegrid:block/stabilizer_240" },
+    "tripped=false,facing=east": { "model": "powersafegrid:block/stabilizer_240", "y": 90 },
+    "tripped=false,facing=south": { "model": "powersafegrid:block/stabilizer_240", "y": 180 },
+    "tripped=false,facing=west": { "model": "powersafegrid:block/stabilizer_240", "y": 270 },
+    "tripped=true,facing=north": { "model": "powersafegrid:block/stabilizer_240_tripped" },
+    "tripped=true,facing=east": { "model": "powersafegrid:block/stabilizer_240_tripped", "y": 90 },
+    "tripped=true,facing=south": { "model": "powersafegrid:block/stabilizer_240_tripped", "y": 180 },
+    "tripped=true,facing=west": { "model": "powersafegrid:block/stabilizer_240_tripped", "y": 270 }
+  }
+}

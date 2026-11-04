@@ -1,0 +1,88 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.gradle.userdev' version '7.1.38'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'info'
+        workingDirectory project.layout.projectDirectory.dir('run').dir(name)
+        modSource project.sourceSets.main
+    }
+
+    client {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
+}
+
+repositories {
+    // Local repository holding the PowerGrid jar (Modrinth maven is proxied through it).
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'LocalModMaven'
+                url = file('local-maven')
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'CreateMod'
+                url = 'https://maven.createmod.net'
+            }
+        }
+        filter {
+            includeGroup 'com.simibubi'
+            includeGroup 'net.createmod'
+            includeGroup 'dev.engine-room'
+        }
+    }
+    maven {
+        name = 'Ithundxr'
+        url = 'https://maven.ithundxr.dev/snapshots'
+        content { includeGroup 'com.tterrag.registrate' }
+    }
+    maven {
+        name = 'Architectury'
+        url = 'https://maven.architectury.dev/'
+        content { includeGroup 'dev.architectury' }
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neoforge_version}"
+
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    implementation "net.createmod.ponder:ponder-neoforge:${ponder_version}"
+    implementation "dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_api_version}"
+    implementation "com.tterrag.registrate:Registrate:${registrate_version}"
+    implementation "dev.architectury:architectury-neoforge:${architectury_version}"
+
+    implementation "maven.modrinth:power-grid:${powergrid_version}"
+
+    // Runtime-only companions for launching a dev client
+    localRuntime "dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}"
+    localRuntime "dev.engine-room.vanillin:vanillin-neoforge-${minecraft_version}:${vanillin_version}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

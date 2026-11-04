@@ -7,7 +7,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powersafegrid:stabilizer_240"
+          "name": "xyz.vlados63k.powersafegrid:stabilizer_240"
         }
       ],
       "conditions": [

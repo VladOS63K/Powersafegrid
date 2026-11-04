@@ -12,7 +12,7 @@ import org.powersafegrid.network.PSGPayloads;
 
 @Mod(PowerSafeGrid.MOD_ID)
 public class PowerSafeGrid {
-    public static final String MOD_ID = "powersafegrid";
+    public static final String MOD_ID = "xyz.vlados63k.powersafegrid";
 
     public PowerSafeGrid(IEventBus modEventBus) {
         PSGBlocks.register(modEventBus);

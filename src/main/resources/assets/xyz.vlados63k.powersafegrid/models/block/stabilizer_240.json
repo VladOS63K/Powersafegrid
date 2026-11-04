@@ -1,12 +1,12 @@
 {
   "textures": {
-    "0": "powersafegrid:block/stabilizer_front_240",
-    "1": "powersafegrid:block/stabilizer_side",
-    "2": "powersafegrid:block/stabilizer_top",
-    "3": "powersafegrid:block/stabilizer_bottom",
-    "4": "powersafegrid:block/stabilizer_back",
-    "5": "powersafegrid:block/terminal",
-    "particle": "powersafegrid:block/stabilizer_side"
+    "0": "xyz.vlados63k.powersafegrid:block/stabilizer_front_240",
+    "1": "xyz.vlados63k.powersafegrid:block/stabilizer_side",
+    "2": "xyz.vlados63k.powersafegrid:block/stabilizer_top",
+    "3": "xyz.vlados63k.powersafegrid:block/stabilizer_bottom",
+    "4": "xyz.vlados63k.powersafegrid:block/stabilizer_back",
+    "5": "xyz.vlados63k.powersafegrid:block/terminal",
+    "particle": "xyz.vlados63k.powersafegrid:block/stabilizer_side"
   },
   "elements": [
     {

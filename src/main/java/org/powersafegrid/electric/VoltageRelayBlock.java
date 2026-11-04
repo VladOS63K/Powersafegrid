@@ -85,7 +85,7 @@ public class VoltageRelayBlock extends HorizontalElectricBlock implements IBE<Vo
             return InteractionResult.SUCCESS;
         }
         if (!world.isClientSide)
-            withBlockEntityDo(world, pos, be -> player.openMenu(be));
+            withBlockEntityDo(world, pos, be -> player.openMenu(be, buf -> buf.writeBlockPos(pos)));
         return InteractionResult.SUCCESS;
     }
 

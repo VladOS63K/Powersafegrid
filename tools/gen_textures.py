@@ -6,7 +6,7 @@ Run from the project root:  python3 tools/gen_textures.py
 """
 import struct, zlib, os
 
-OUT = "src/main/resources/assets/powersafegrid/textures"
+OUT = "src/main/resources/assets/xyz.vlados63k.powersafegrid/textures"
 
 def png(path, pixels, w, h):
     os.makedirs(os.path.dirname(path), exist_ok=True)

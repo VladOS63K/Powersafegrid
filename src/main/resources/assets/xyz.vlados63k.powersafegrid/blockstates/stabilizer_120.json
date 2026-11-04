@@ -1,12 +1,12 @@
 {
   "variants": {
-    "tripped=false,facing=north": { "model": "powersafegrid:block/stabilizer_120" },
-    "tripped=false,facing=east": { "model": "powersafegrid:block/stabilizer_120", "y": 90 },
-    "tripped=false,facing=south": { "model": "powersafegrid:block/stabilizer_120", "y": 180 },
-    "tripped=false,facing=west": { "model": "powersafegrid:block/stabilizer_120", "y": 270 },
-    "tripped=true,facing=north": { "model": "powersafegrid:block/stabilizer_120_tripped" },
-    "tripped=true,facing=east": { "model": "powersafegrid:block/stabilizer_120_tripped", "y": 90 },
-    "tripped=true,facing=south": { "model": "powersafegrid:block/stabilizer_120_tripped", "y": 180 },
-    "tripped=true,facing=west": { "model": "powersafegrid:block/stabilizer_120_tripped", "y": 270 }
+    "tripped=false,facing=north": { "model": "xyz.vlados63k.powersafegrid:block/stabilizer_120" },
+    "tripped=false,facing=east": { "model": "xyz.vlados63k.powersafegrid:block/stabilizer_120", "y": 90 },
+    "tripped=false,facing=south": { "model": "xyz.vlados63k.powersafegrid:block/stabilizer_120", "y": 180 },
+    "tripped=false,facing=west": { "model": "xyz.vlados63k.powersafegrid:block/stabilizer_120", "y": 270 },
+    "tripped=true,facing=north": { "model": "xyz.vlados63k.powersafegrid:block/stabilizer_120_tripped" },
+    "tripped=true,facing=east": { "model": "xyz.vlados63k.powersafegrid:block/stabilizer_120_tripped", "y": 90 },
+    "tripped=true,facing=south": { "model": "xyz.vlados63k.powersafegrid:block/stabilizer_120_tripped", "y": 180 },
+    "tripped=true,facing=west": { "model": "xyz.vlados63k.powersafegrid:block/stabilizer_120_tripped", "y": 270 }
   }
 }

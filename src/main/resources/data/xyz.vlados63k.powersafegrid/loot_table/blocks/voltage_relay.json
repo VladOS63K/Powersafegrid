@@ -7,7 +7,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powersafegrid:voltage_relay"
+          "name": "xyz.vlados63k.powersafegrid:voltage_relay"
         }
       ],
       "conditions": [

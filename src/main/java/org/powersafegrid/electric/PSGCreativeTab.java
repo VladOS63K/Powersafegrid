@@ -15,7 +15,7 @@ public class PSGCreativeTab {
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = TABS.register("main",
             () -> CreativeModeTab.builder()
-                    .title(Component.translatable("itemGroup.powersafegrid.main"))
+                    .title(Component.translatable("itemGroup." + PowerSafeGrid.MOD_ID + ".main"))
                     .icon(() -> new ItemStack(PSGBlocks.VOLTAGE_RELAY.get()))
                     .displayItems((parameters, output) -> {
                         output.accept(PSGBlocks.VOLTAGE_RELAY.get());

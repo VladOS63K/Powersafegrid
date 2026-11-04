@@ -13,12 +13,12 @@ public class PSGBlockEntities {
 
     public static final Supplier<BlockEntityType<VoltageRelayBlockEntity>> VOLTAGE_RELAY =
             BLOCK_ENTITIES.register("voltage_relay", () -> BlockEntityType.Builder.of(
-                    VoltageRelayBlockEntity::new,
+                    (pos, state) -> new VoltageRelayBlockEntity(VOLTAGE_RELAY.get(), pos, state),
                     PSGBlocks.VOLTAGE_RELAY.get()).build(null));
 
     public static final Supplier<BlockEntityType<StabilizerBlockEntity>> STABILIZER =
             BLOCK_ENTITIES.register("stabilizer", () -> BlockEntityType.Builder.of(
-                    StabilizerBlockEntity::new,
+                    (pos, state) -> new StabilizerBlockEntity(STABILIZER.get(), pos, state),
                     PSGBlocks.STABILIZER_120.get(),
                     PSGBlocks.STABILIZER_240.get()).build(null));
 

@@ -11,8 +11,8 @@ import org.powersafegrid.electric.PSGMenus;
 import org.powersafegrid.electric.VoltageRelayBlockEntity;
 
 public class VoltageRelayMenu extends MenuBase<VoltageRelayBlockEntity> {
-    public VoltageRelayMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
-        super(type, id, inv, extraData);
+    public VoltageRelayMenu(int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
+        super(PSGMenus.VOLTAGE_RELAY.get(), id, inv, extraData);
     }
 
     public VoltageRelayMenu(int id, Inventory inv, VoltageRelayBlockEntity contentHolder) {

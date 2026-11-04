@@ -8,9 +8,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -109,7 +109,7 @@ public class StabilizerBlock extends HorizontalElectricBlock implements IBE<Stab
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.stabilizer.1",
                 String.format("%.0f", targetVoltage)).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.stabilizer.2",

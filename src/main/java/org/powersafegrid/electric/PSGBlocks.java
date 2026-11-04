@@ -13,13 +13,13 @@ public class PSGBlocks {
             DeferredRegister.createBlocks(PowerSafeGrid.MOD_ID);
 
     public static final DeferredBlock<VoltageRelayBlock> VOLTAGE_RELAY =
-            BLOCKS.register("voltage_relay", VoltageRelayBlock::new);
+            BLOCKS.register("voltage_relay", () -> new VoltageRelayBlock(properties()));
 
     public static final DeferredBlock<StabilizerBlock> STABILIZER_120 =
-            BLOCKS.register("stabilizer_120", () -> new StabilizerBlock(120, 90, 130));
+            BLOCKS.register("stabilizer_120", () -> new StabilizerBlock(properties(), 120f, 90f, 130f));
 
     public static final DeferredBlock<StabilizerBlock> STABILIZER_240 =
-            BLOCKS.register("stabilizer_240", () -> new StabilizerBlock(240, 190, 250));
+            BLOCKS.register("stabilizer_240", () -> new StabilizerBlock(properties(), 240f, 190f, 250f));
 
     public static BlockBehaviour.Properties properties() {
         return BlockBehaviour.Properties.of()

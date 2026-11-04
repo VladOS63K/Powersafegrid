@@ -55,7 +55,7 @@ public class VoltageRelayScreen extends AbstractSimiContainerScreen<VoltageRelay
     }
 
     private int trackY() {
-        return topPos + 58;
+        return topPos - 78;
     }
 
     @Override

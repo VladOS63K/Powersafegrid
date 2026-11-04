@@ -34,9 +34,9 @@ public class VoltageRelayBlock extends HorizontalElectricBlock implements IBE<Vo
 
     public static final BooleanProperty CLOSED = BooleanProperty.create("closed");
 
-    public static final Component TERMINAL_INPUT_L = terminal("relay.input_l", ChatFormatting.GOLD);
+    public static final Component TERMINAL_INPUT_L = terminal("relay.input_l", ChatFormatting.RED);
     public static final Component TERMINAL_INPUT_N = terminal("relay.input_n", ChatFormatting.BLUE);
-    public static final Component TERMINAL_OUTPUT_L = terminal("relay.output_l", ChatFormatting.GOLD);
+    public static final Component TERMINAL_OUTPUT_L = terminal("relay.output_l", ChatFormatting.RED);
     public static final Component TERMINAL_OUTPUT_N = terminal("relay.output_n", ChatFormatting.BLUE);
 
     private static final VoxelShape SHAPE_NORTH = Shapes.or(

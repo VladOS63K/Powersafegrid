@@ -5,10 +5,10 @@
   "block.powersafegrid.stabilizer_120": "Стабилизатор напряжения (120 В)",
   "block.powersafegrid.stabilizer_240": "Стабилизатор напряжения (240 В)",
 
-  "powersafegrid.terminal.relay.input_l": "Вход (фаза)",
-  "powersafegrid.terminal.relay.input_n": "Вход (ноль)",
-  "powersafegrid.terminal.relay.output_l": "Выход (фаза)",
-  "powersafegrid.terminal.relay.output_n": "Выход (ноль)",
+  "powersafegrid.terminal.relay.input_l": "Плюс (вход)",
+  "powersafegrid.terminal.relay.input_n": "Минус (вход)",
+  "powersafegrid.terminal.relay.output_l": "Плюс (выход)",
+  "powersafegrid.terminal.relay.output_n": "Минус (выход)",
 
   "powersafegrid.tooltip.relay.1": "Разрывает цепь нагрузки при выходе напряжения за настроенный диапазон.",
   "powersafegrid.tooltip.relay.2": "ПКМ — настройка. При возврате напряжения в диапазон включается сам; при перегрузке по току отключается до сброса.",
@@ -21,7 +21,7 @@
   "powersafegrid.gui.relay.status_open": "Разорвано — напряжение вне диапазона",
   "powersafegrid.gui.relay.status_overload": "Перегруз — требуется сброс",
   "powersafegrid.gui.relay.measured": "Вход: %s В   Ток: %s А",
-  "powersafegrid.gui.relay.hint": "Тяните ползунки или крутите колесо над ними (Shift = x10). Диапазон сработки.",
+  "powersafegrid.gui.relay.hint": "Тяните ползунки или крутите колесо над ними (Shift = x10).",
 
   "powersafegrid.goggles.reset_hint": "Сбросьте отверткой/гаечным ключом, чтобы включить",
   "powersafegrid.goggles.relay.status_header": "Реле напряжения",

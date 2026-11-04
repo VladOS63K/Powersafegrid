@@ -5,10 +5,10 @@
   "block.powersafegrid.stabilizer_120": "Voltage Stabilizer (120 V)",
   "block.powersafegrid.stabilizer_240": "Voltage Stabilizer (240 V)",
 
-  "powersafegrid.terminal.relay.input_l": "Input (phase)",
-  "powersafegrid.terminal.relay.input_n": "Input (neutral)",
-  "powersafegrid.terminal.relay.output_l": "Output (phase)",
-  "powersafegrid.terminal.relay.output_n": "Output (neutral)",
+  "powersafegrid.terminal.relay.input_l": "Positive Input",
+  "powersafegrid.terminal.relay.input_n": "Negative Input",
+  "powersafegrid.terminal.relay.output_l": "Positive Output",
+  "powersafegrid.terminal.relay.output_n": "Negative Output",
 
   "powersafegrid.tooltip.relay.1": "Breaks the load circuit when the voltage leaves the configured range.",
   "powersafegrid.tooltip.relay.2": "Right-click to configure. Reconnects automatically when the voltage returns; overcurrent latches it off.",
@@ -21,10 +21,10 @@
   "powersafegrid.gui.relay.status_open": "Tripped - voltage out of range",
   "powersafegrid.gui.relay.status_overload": "Overload - reset required",
   "powersafegrid.gui.relay.measured": "Input: %s V   Current: %s A",
-  "powersafegrid.gui.relay.hint": "Drag the handles or scroll on them (Shift = x10). Range: trip voltage window.",
+  "powersafegrid.gui.relay.hint": "Drag the handles or scroll on them (Shift = x10).",
 
   "powersafegrid.goggles.reset_hint": "Reset with a screwdriver/wrench to re-enable",
-  "powersafegrid.goggles.relay.status_header": "Voltage relay",
+  "powersafegrid.goggles.relay.status_header": "Voltage Relay",
   "powersafegrid.goggles.relay.status_closed": "Status: normal (closed)",
   "powersafegrid.goggles.relay.status_open": "Status: broken (voltage out of range)",
   "powersafegrid.goggles.relay.status_overload": "Status: overload, broken off",

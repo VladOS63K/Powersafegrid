@@ -55,7 +55,7 @@ public class VoltageRelayScreen extends AbstractSimiContainerScreen<VoltageRelay
     }
 
     private int trackY() {
-        return topPos - 78;
+        return topPos + 78;
     }
 
     @Override
@@ -112,7 +112,7 @@ public class VoltageRelayScreen extends AbstractSimiContainerScreen<VoltageRelay
         gfx.drawCenteredString(font, high, valueToX(relay.getHighLimit()), y - 24, 0xC8442E);
 
         // Hints
-        gfx.drawString(font, Component.translatable(PowerSafeGrid.MOD_ID + ".gui.relay.hint"), leftPos + 10, topPos + HEIGHT - 12, 0x8B8B8B, false);
+        gfx.drawString(font, Component.translatable(PowerSafeGrid.MOD_ID + ".gui.relay.hint"), leftPos + 10, topPos + HEIGHT - 22, 0x8B8B8B, false);
     }
 
     private void drawHandle(GuiGraphics gfx, int x, int y, boolean sel, int color) {

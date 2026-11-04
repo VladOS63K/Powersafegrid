@@ -21,7 +21,7 @@
   "powersafegrid.gui.relay.status_open": "Разорвано — напряжение вне диапазона",
   "powersafegrid.gui.relay.status_overload": "Перегруз — требуется сброс",
   "powersafegrid.gui.relay.measured": "Вход: %s В   Ток: %s А",
-  "powersafegrid.gui.relay.hint": "Тяните ползунки или крутите колесо над ними (Shift = x10).",
+  "powersafegrid.gui.relay.hint": "Тяните ползунки или крутите колесо над ними\n(Shift = x10).",
 
   "powersafegrid.goggles.reset_hint": "Сбросьте отверткой/гаечным ключом, чтобы включить",
   "powersafegrid.goggles.relay.status_header": "Реле напряжения",

@@ -86,3 +86,20 @@ dependencies {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+// Fill ${...} placeholders in neoforge.mods.toml
+def replaceProperties = [
+        mod_id         : mod_id,
+        mod_name       : mod_name,
+        mod_license    : mod_license,
+        mod_version    : mod_version,
+        mod_authors    : mod_authors,
+        mod_description: mod_description
+]
+
+tasks.named('processResources', ProcessResources).configure {
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}

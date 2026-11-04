@@ -19,7 +19,7 @@
     }
   },
   "result": {
-    "id": "xyz.vlados63k.powersafegrid:voltage_relay",
+    "id": "powersafegrid:voltage_relay",
     "count": 1
   }
 }

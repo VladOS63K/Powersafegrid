@@ -1,12 +1,12 @@
 {
   "textures": {
-    "0": "xyz.vlados63k.powersafegrid:block/relay_front_on",
-    "1": "xyz.vlados63k.powersafegrid:block/relay_side",
-    "2": "xyz.vlados63k.powersafegrid:block/relay_top",
-    "3": "xyz.vlados63k.powersafegrid:block/relay_bottom",
-    "4": "xyz.vlados63k.powersafegrid:block/relay_back",
-    "5": "xyz.vlados63k.powersafegrid:block/terminal",
-    "particle": "xyz.vlados63k.powersafegrid:block/relay_side"
+    "0": "powersafegrid:block/relay_front_on",
+    "1": "powersafegrid:block/relay_side",
+    "2": "powersafegrid:block/relay_top",
+    "3": "powersafegrid:block/relay_bottom",
+    "4": "powersafegrid:block/relay_back",
+    "5": "powersafegrid:block/terminal",
+    "particle": "powersafegrid:block/relay_side"
   },
   "elements": [
     {

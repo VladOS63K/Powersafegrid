@@ -71,6 +71,14 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     private int overloadTimer;
     private int voltTimer;
     private int burnTimer = -1;
+
+    /** Fast-synced display values, only meaningful on the client. */
+    private float clientUIn;
+    private float clientUOut;
+    private float clientIOut;
+    private Status clientStatus = Status.RUNNING;
+    private boolean clientBurning;
+    private int syncTimer;
     private boolean primed;
     private boolean playEffects;
 
@@ -94,6 +102,8 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     }
 
     public Status getStatus() {
+        if (level != null && level.isClientSide)
+            return clientBurning ? Status.OVERLOAD : clientStatus;
         return burnTimer >= 0 ? Status.OVERLOAD : status;
     }
 
@@ -102,10 +112,14 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     }
 
     public boolean isBurning() {
+        if (level != null && level.isClientSide)
+            return clientBurning;
         return burnTimer >= 0;
     }
 
     public double getInputVoltage() {
+        if (level != null && level.isClientSide)
+            return clientUIn;
         if (electricBehaviour == null || !electricBehaviour.hasTerminal(1))
             return 0;
         return Math.abs(electricBehaviour.getTerminal(0).getVoltage() - electricBehaviour.getTerminal(1).getVoltage());
@@ -113,6 +127,8 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
 
     /** Voltage across the output terminals. */
     public double getOutputVoltage() {
+        if (level != null && level.isClientSide)
+            return clientUOut;
         if (electricBehaviour == null || !electricBehaviour.hasTerminal(3))
             return 0;
         return Math.abs(electricBehaviour.getTerminal(2).getVoltage() - electricBehaviour.getTerminal(3).getVoltage());
@@ -128,6 +144,8 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     }
 
     public double getOutputCurrent() {
+        if (level != null && level.isClientSide)
+            return clientIOut;
         if (s1w == null || status != Status.RUNNING || burnTimer >= 0)
             return 0;
         return Math.abs(s1w.current());
@@ -219,9 +237,20 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     @Override
     public void tick() {
         super.tick();
-        if (level != null && level.isClientSide && burnTimer >= 0 && level.random.nextInt(3) == 0) {
-            var center = worldPosition.getCenter();
-            level.addParticle(ParticleTypes.SMOKE, center.x, center.y + 0.5, center.z, 0, 0.02, 0);
+        if (level == null)
+            return;
+        if (level.isClientSide) {
+            if (burnTimer >= 0 && level.random.nextInt(3) == 0) {
+                var center = worldPosition.getCenter();
+                level.addParticle(ParticleTypes.SMOKE, center.x, center.y + 0.5, center.z, 0, 0.02, 0);
+            }
+            return;
+        }
+        // Push fresh display values to clients so the goggles readout is live
+        // (network node sync alone is throttled with distance).
+        if (++syncTimer >= 4) {
+            syncTimer = 0;
+            sendData();
         }
     }
 
@@ -345,6 +374,13 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         status = Status.VALUES[tag.getByte("Status") % Status.VALUES.length];
         ratio = tag.contains("Ratio") ? tag.getFloat("Ratio") : 1f;
         burnTimer = tag.contains("Burning") ? BURN_TICKS : -1;
+        if (clientPacket) {
+            clientUIn = tag.getFloat("ClUIn");
+            clientUOut = tag.getFloat("ClUOut");
+            clientIOut = tag.getFloat("ClIOut");
+            clientStatus = Status.VALUES[tag.getByte("ClStatus") % Status.VALUES.length];
+            clientBurning = tag.getBoolean("ClBurning");
+        }
         if (clientPacket && tag.getBoolean("Effect")) {
             playEffects = false;
             spawnTripEffects();
@@ -358,6 +394,13 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         tag.putFloat("Ratio", ratio);
         if (burnTimer >= 0)
             tag.putBoolean("Burning", true);
+        if (clientPacket) {
+            tag.putFloat("ClUIn", (float) getInputVoltage());
+            tag.putFloat("ClUOut", (float) getOutputVoltage());
+            tag.putFloat("ClIOut", (float) getOutputCurrent());
+            tag.putByte("ClStatus", (byte) status.ordinal());
+            tag.putBoolean("ClBurning", burnTimer >= 0);
+        }
         if (playEffects) {
             tag.putBoolean("Effect", true);
             playEffects = false;
@@ -410,6 +453,7 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         tooltip.add(Component.translatable(statusKey).withStyle(statusColor));
         tooltip.add(line(key + "target", String.format("%.0f V", targetVoltage)));
         tooltip.add(line(key + "input", String.format("%.0f V", getInputVoltage())));
+        tooltip.add(line(key + "output", String.format("%.0f V", getOutputVoltage())));
         tooltip.add(line(key + "current", String.format("%.1f A", getOutputCurrent())));
         tooltip.add(line(key + "window", String.format("%.0f - %.0f V", minVoltage, maxVoltage)));
         if (status != Status.RUNNING)

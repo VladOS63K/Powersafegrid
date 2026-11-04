@@ -21,6 +21,8 @@ public class PSGCreativeTab {
                         output.accept(PSGBlocks.VOLTAGE_RELAY.get());
                         output.accept(PSGBlocks.STABILIZER_120.get());
                         output.accept(PSGBlocks.STABILIZER_240.get());
+                        output.accept(PSGBlocks.CREATIVE_STABILIZER_120.get());
+                        output.accept(PSGBlocks.CREATIVE_STABILIZER_240.get());
                     })
                     .build());
 

@@ -21,6 +21,14 @@ public class PSGBlocks {
     public static final DeferredBlock<StabilizerBlock> STABILIZER_240 =
             BLOCKS.register("stabilizer_240", () -> new StabilizerBlock(properties(), 240f, 190f, 250f));
 
+    public static final DeferredBlock<CreativeStabilizerBlock> CREATIVE_STABILIZER_120 =
+            BLOCKS.register("creative_stabilizer_120",
+                    () -> new CreativeStabilizerBlock(properties().mapColor(MapColor.COLOR_PURPLE), 120f));
+
+    public static final DeferredBlock<CreativeStabilizerBlock> CREATIVE_STABILIZER_240 =
+            BLOCKS.register("creative_stabilizer_240",
+                    () -> new CreativeStabilizerBlock(properties().mapColor(MapColor.COLOR_PURPLE), 240f));
+
     public static BlockBehaviour.Properties properties() {
         return BlockBehaviour.Properties.of()
                 .mapColor(MapColor.METAL)

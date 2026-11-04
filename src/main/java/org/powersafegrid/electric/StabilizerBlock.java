@@ -43,7 +43,7 @@ public class StabilizerBlock extends HorizontalElectricBlock implements IBE<Stab
     public static final Component TERMINAL_OUTPUT_L = VoltageRelayBlock.TERMINAL_OUTPUT_L;
     public static final Component TERMINAL_OUTPUT_N = VoltageRelayBlock.TERMINAL_OUTPUT_N;
 
-    private static final VoxelShape SHAPE_NORTH = Shapes.or(
+    static final VoxelShape SHAPE_NORTH = Shapes.or(
             Shapes.box(1 / 16.0, 0, 2 / 16.0, 15 / 16.0, 14 / 16.0, 14 / 16.0),
             Shapes.box(2 / 16.0, 5 / 16.0, 14 / 16.0, 5 / 16.0, 8 / 16.0, 1),
             Shapes.box(11 / 16.0, 5 / 16.0, 14 / 16.0, 14 / 16.0, 8 / 16.0, 1),

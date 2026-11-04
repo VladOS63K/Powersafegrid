@@ -22,8 +22,18 @@ public class PSGBlockEntities {
                     PSGBlocks.STABILIZER_120.get(),
                     PSGBlocks.STABILIZER_240.get()).build(null));
 
+    public static final Supplier<BlockEntityType<CreativeStabilizerBlockEntity>> CREATIVE_STABILIZER =
+            BLOCK_ENTITIES.register("creative_stabilizer", () -> BlockEntityType.Builder.of(
+                    (pos, state) -> new CreativeStabilizerBlockEntity(creativeType(), pos, state),
+                    PSGBlocks.CREATIVE_STABILIZER_120.get(),
+                    PSGBlocks.CREATIVE_STABILIZER_240.get()).build(null));
+
     private static BlockEntityType<VoltageRelayBlockEntity> relayType() {
         return VOLTAGE_RELAY.get();
+    }
+
+    private static BlockEntityType<CreativeStabilizerBlockEntity> creativeType() {
+        return CREATIVE_STABILIZER.get();
     }
 
     private static BlockEntityType<StabilizerBlockEntity> stabilizerType() {

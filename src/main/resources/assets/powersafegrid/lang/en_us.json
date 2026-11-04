@@ -35,5 +35,12 @@
   "powersafegrid.goggles.stabilizer.current": "Output current: ",
   "powersafegrid.goggles.stabilizer.window": "Working window: ",
   "powersafegrid.goggles.relay.status_burning": "Status: BURNING - about to explode!",
-  "powersafegrid.goggles.stabilizer.status_burning": "Status: BURNING - about to explode!"
+  "powersafegrid.goggles.stabilizer.status_burning": "Status: BURNING - about to explode!",
+  "block.powersafegrid.creative_stabilizer_120": "Creative Voltage Stabilizer (120 V)",
+  "block.powersafegrid.creative_stabilizer_240": "Creative Voltage Stabilizer (240 V)",
+  "powersafegrid.tooltip.creative_stabilizer.1": "Creative stabilizer: outputs a constant %s V.",
+  "powersafegrid.tooltip.creative_stabilizer.2": "Ignores the input entirely - no voltage window, no current limit, never trips.",
+  "powersafegrid.tooltip.creative_stabilizer.3": "Ideal source: it can also absorb power fed into its output.",
+  "powersafegrid.goggles.stabilizer.creative_header": "Creative stabilizer",
+  "powersafegrid.goggles.stabilizer.output": "Output voltage: "
 }

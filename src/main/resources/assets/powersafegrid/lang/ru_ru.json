@@ -35,5 +35,12 @@
   "powersafegrid.goggles.stabilizer.current": "Ток нагрузки: ",
   "powersafegrid.goggles.stabilizer.window": "Рабочий диапазон: ",
   "powersafegrid.goggles.relay.status_burning": "Статус: ГОРИТ - скоро взрыв!",
-  "powersafegrid.goggles.stabilizer.status_burning": "Статус: ГОРИТ - скоро взрыв!"
+  "powersafegrid.goggles.stabilizer.status_burning": "Статус: ГОРИТ - скоро взрыв!",
+  "block.powersafegrid.creative_stabilizer_120": "Творческий стабилизатор напряжения (120 В)",
+  "block.powersafegrid.creative_stabilizer_240": "Творческий стабилизатор напряжения (240 В)",
+  "powersafegrid.tooltip.creative_stabilizer.1": "Творческий стабилизатор: выдаёт постоянные %s В.",
+  "powersafegrid.tooltip.creative_stabilizer.2": "Вход полностью игнорируется — без окна напряжения и лимитов тока, никогда не срабатывает.",
+  "powersafegrid.tooltip.creative_stabilizer.3": "Идеальный источник: может также поглощать мощность со своего выхода.",
+  "powersafegrid.goggles.stabilizer.creative_header": "Творческий стабилизатор",
+  "powersafegrid.goggles.stabilizer.output": "Выходное напряжение: "
 }

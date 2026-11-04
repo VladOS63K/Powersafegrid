@@ -19,6 +19,12 @@ public class PSGItems {
     public static final DeferredItem<BlockItem> STABILIZER_240 =
             ITEMS.registerSimpleBlockItem(PSGBlocks.STABILIZER_240);
 
+    public static final DeferredItem<BlockItem> CREATIVE_STABILIZER_120 =
+            ITEMS.registerSimpleBlockItem(PSGBlocks.CREATIVE_STABILIZER_120);
+
+    public static final DeferredItem<BlockItem> CREATIVE_STABILIZER_240 =
+            ITEMS.registerSimpleBlockItem(PSGBlocks.CREATIVE_STABILIZER_240);
+
     public static void register(IEventBus bus) {
         ITEMS.register(bus);
     }

@@ -22,8 +22,11 @@ import java.util.List;
 /**
  * Variac-style voltage stabilizer. The output voltage is held at the block's
  * target voltage by continuously adjusting a transformer coupling ratio while
- * the input voltage stays inside the working window. Leaving the window or an
- * overcurrent latches the device off until it is reset with a screwdriver/wrench.
+ * the input voltage stays inside the working window. Close to the lower edge
+ * of the window the boost capability fades out and the output starts to sag
+ * and flicker. Leaving the window latches the device off; a severe overvoltage
+ * or overcurrent makes it smoke and finally explode. A tripped stabilizer only
+ * recovers when it is reset with a screwdriver/wrench.
  */
 public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     public static final float PRIMARY_RESISTANCE = 0.1f;
@@ -31,11 +34,19 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     public static final float COUPLING_RESISTANCE = 0.5f;
     public static final float OVERLOAD_CURRENT = 60f;
     public static final float EXPLODE_CURRENT = 100f;
+    /** Above this multiple of the upper window limit an overvoltage burns the stabilizer up. */
+    public static final float BURN_VOLTAGE_MULTIPLIER = 3f;
     public static final int OVERLOAD_CONFIRM_TICKS = 5;
     public static final int EXPLODE_CONFIRM_TICKS = 10;
+    public static final int BURN_TICKS = 40;
     public static final float RATIO_SLEW = 0.08f;
-    public static final float MIN_RATIO = 0.25f;
+    public static final float MIN_RATIO = 0.1f;
     public static final float MAX_RATIO = 4f;
+    /** Fraction of the working window above the lower limit where regulation is still full. */
+    public static final float REGULATION_HOLD_FRACTION = 0.25f;
+    public static final float FLICKER_AMPLITUDE = 0.06f;
+    /** Extra boost headroom above the ideal ratio to cover load losses. */
+    public static final float LOAD_MARGIN = 1.25f;
 
     public enum Status {
         RUNNING,   // норма
@@ -58,6 +69,8 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     private Status status = Status.RUNNING;
     private float ratio = 1f;
     private int overloadTimer;
+    private int burnTimer = -1;
+    private boolean primed;
     private boolean playEffects;
 
     public StabilizerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -80,11 +93,15 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     }
 
     public Status getStatus() {
-        return status;
+        return burnTimer >= 0 ? Status.OVERLOAD : status;
     }
 
     public boolean isTripped() {
-        return status != Status.RUNNING;
+        return status != Status.RUNNING || burnTimer >= 0;
+    }
+
+    public boolean isBurning() {
+        return burnTimer >= 0;
     }
 
     public double getInputVoltage() {
@@ -94,7 +111,7 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     }
 
     public double getOutputCurrent() {
-        if (s1w == null || status != Status.RUNNING)
+        if (s1w == null || status != Status.RUNNING || burnTimer >= 0)
             return 0;
         return Math.abs(s1w.current());
     }
@@ -103,18 +120,44 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         return targetVoltage;
     }
 
+    private void applyWireStates(boolean closed) {
+        if (p1w != null) {
+            p1w.setState(false);
+            p1w.setState(closed);
+        }
+        if (p2w != null) {
+            p2w.setState(false);
+            p2w.setState(closed);
+        }
+        if (s1w != null) {
+            s1w.setState(false);
+            s1w.setState(closed);
+        }
+        if (s2w != null) {
+            s2w.setState(false);
+            s2w.setState(closed);
+        }
+    }
+
     private void trip(Status newStatus) {
         status = newStatus;
-        if (p1w != null && p2w != null && s1w != null && s2w != null) {
-            p1w.setState(false);
-            p2w.setState(false);
-            s1w.setState(false);
-            s2w.setState(false);
-        }
+        applyWireStates(false);
         overloadTimer = 0;
         playEffects = true;
         level.setBlockAndUpdate(worldPosition, getBlockState().setValue(StabilizerBlock.TRIPPED, true));
         ModdedSoundEvents.FUSE_POPS.playOnServer(level, worldPosition, 1f, 0.8f);
+        setChanged();
+        notifyUpdate();
+    }
+
+    /** Severe overvoltage: smoke for a moment, then explode. */
+    private void startBurn() {
+        status = Status.VOLTAGE;
+        applyWireStates(false);
+        burnTimer = BURN_TICKS + level.random.nextInt(20);
+        playEffects = true;
+        level.setBlockAndUpdate(worldPosition, getBlockState().setValue(StabilizerBlock.TRIPPED, true));
+        ModdedSoundEvents.FUSE_POPS.playOnServer(level, worldPosition, 1.2f, 0.6f);
         setChanged();
         notifyUpdate();
     }
@@ -127,13 +170,9 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     public void reset() {
         if (!isTripped())
             return;
+        burnTimer = -1;
         status = Status.RUNNING;
-        if (p1w != null && p2w != null && s1w != null && s2w != null) {
-            p1w.setState(true);
-            p2w.setState(true);
-            s1w.setState(true);
-            s2w.setState(true);
-        }
+        applyWireStates(true);
         ratio = 1f;
         if (coupling != null)
             coupling.setRatio(ratio);
@@ -145,13 +184,41 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     }
 
     @Override
+    public void unpaused() {
+        // Make sure freshly built internal wires are actually registered in the
+        // network matrix; a device that never re-registers them passes nothing.
+        electricBehaviour.rebuildCircuit(false);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (level != null && level.isClientSide && burnTimer >= 0 && level.random.nextInt(3) == 0) {
+            var center = worldPosition.getCenter();
+            level.addParticle(ParticleTypes.SMOKE, center.x, center.y + 0.5, center.z, 0, 0.02, 0);
+        }
+    }
+
+    @Override
     public void electricalTick() {
         applyPower(p1w);
         applyPower(s1w);
         if (level.isClientSide || p1w == null || coupling == null)
             return;
-        if (!p1w.isConverged())
+
+        // One-time re-registration of the switched wires once they are in a network.
+        if (!primed && p1w.getNetwork() != null) {
+            primed = true;
+            applyWireStates(burnTimer < 0 && status == Status.RUNNING);
+        }
+
+        // Burning countdown; the stabilizer is done for.
+        if (burnTimer >= 0) {
+            if (--burnTimer <= 0)
+                explode();
             return;
+        }
+
         if (status != Status.RUNNING)
             return;
 
@@ -170,14 +237,46 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         }
         overloadTimer = 0;
 
+        float burnLimit = BURN_VOLTAGE_MULTIPLIER * maxVoltage;
+        if (uIn > burnLimit) {
+            startBurn();
+            return;
+        }
+
         if (uIn > 5 && (uIn < minVoltage || uIn > maxVoltage)) {
             trip(Status.VOLTAGE);
             return;
         }
 
-        // Regulate the output by adjusting the coupling ratio.
-        if (uIn > 5) {
-            float targetRatio = Mth.clamp((float) (targetVoltage / uIn), MIN_RATIO, MAX_RATIO);
+        // Regulate the output by adjusting the coupling ratio. The feedback loop
+        // watches the actual output voltage, compensating both input variation
+        // and internal losses. Close to the lower edge of the window the boost
+        // capability fades out and the output sags and flickers instead of being
+        // held perfectly.
+        if (uIn > 5 && p1w.isConverged()) {
+            float hold = minVoltage + REGULATION_HOLD_FRACTION * (maxVoltage - minVoltage);
+            float capability = uIn >= hold ? 1f
+                    : Mth.clamp((float) ((uIn - minVoltage) / (hold - minVoltage)), 0f, 1f);
+            float maxBoost = targetVoltage / minVoltage * LOAD_MARGIN - 1f;
+            float allowed = 1f + maxBoost * capability;
+            if (capability < 1f) {
+                float flicker = (level.random.nextFloat() - 0.5f) * 2f * FLICKER_AMPLITUDE * (1f - capability);
+                allowed *= 1f + flicker;
+            }
+            allowed = Mth.clamp(allowed, MIN_RATIO, MAX_RATIO);
+
+            double uOut = Math.abs(electricBehaviour.getTerminal(2).getVoltage() - electricBehaviour.getTerminal(3).getVoltage());
+            float targetRatio = ratio;
+            if (uOut > 1) {
+                // Step the ratio towards the value that puts the output on target.
+                float correction = Mth.clamp((float) (targetVoltage / uOut), 0.9f, 1.1f);
+                targetRatio = ratio * correction;
+            } else if (uIn > 5) {
+                // No feedback signal yet: aim for the open-circuit target.
+                targetRatio = (float) (targetVoltage / uIn);
+            }
+            targetRatio = Math.min(targetRatio, allowed);
+
             float slew = 1f + RATIO_SLEW;
             float next = targetRatio > ratio
                     ? Math.min(targetRatio, ratio * slew)
@@ -207,6 +306,7 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         super.read(tag, registries, clientPacket);
         status = Status.VALUES[tag.getByte("Status") % Status.VALUES.length];
         ratio = tag.contains("Ratio") ? tag.getFloat("Ratio") : 1f;
+        burnTimer = tag.contains("Burning") ? BURN_TICKS : -1;
         if (clientPacket && tag.getBoolean("Effect")) {
             playEffects = false;
             spawnTripEffects();
@@ -218,6 +318,8 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         super.write(tag, registries, clientPacket);
         tag.putByte("Status", (byte) status.ordinal());
         tag.putFloat("Ratio", ratio);
+        if (burnTimer >= 0)
+            tag.putBoolean("Burning", true);
         if (playEffects) {
             tag.putBoolean("Effect", true);
             playEffects = false;
@@ -227,7 +329,10 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(4);
-        boolean closed = status == Status.RUNNING;
+        primed = false;
+        // Derive the wire state from the block state: buildCircuit may run before
+        // NBT (and therefore the saved status) has been read.
+        boolean closed = !getBlockState().getValue(StabilizerBlock.TRIPPED) && status == Status.RUNNING;
         var p1 = builder.addInternalNode();
         var p2 = builder.addInternalNode();
         var s1 = builder.addInternalNode();
@@ -243,12 +348,28 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         String key = PowerSafeGrid.MOD_ID + ".goggles.stabilizer.";
         tooltip.add(Component.translatable(key + "status_header").withStyle(ChatFormatting.GOLD));
-        ChatFormatting statusColor = switch (status) {
-            case RUNNING -> ChatFormatting.GREEN;
-            case OVERLOAD -> ChatFormatting.RED;
-            case VOLTAGE -> ChatFormatting.YELLOW;
-        };
-        tooltip.add(Component.translatable(key + "status_" + status.name().toLowerCase()).withStyle(statusColor));
+        ChatFormatting statusColor;
+        String statusKey;
+        if (burnTimer >= 0) {
+            statusColor = ChatFormatting.DARK_RED;
+            statusKey = key + "status_burning";
+        } else {
+            switch (status) {
+                case RUNNING -> {
+                    statusColor = ChatFormatting.GREEN;
+                    statusKey = key + "status_running";
+                }
+                case OVERLOAD -> {
+                    statusColor = ChatFormatting.RED;
+                    statusKey = key + "status_overload";
+                }
+                default -> {
+                    statusColor = ChatFormatting.YELLOW;
+                    statusKey = key + "status_voltage";
+                }
+            }
+        }
+        tooltip.add(Component.translatable(statusKey).withStyle(statusColor));
         tooltip.add(line(key + "target", String.format("%.0f V", targetVoltage)));
         tooltip.add(line(key + "input", String.format("%.0f V", getInputVoltage())));
         tooltip.add(line(key + "current", String.format("%.1f A", getOutputCurrent())));

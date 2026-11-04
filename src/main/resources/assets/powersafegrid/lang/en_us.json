@@ -1,28 +1,23 @@
 {
   "itemGroup.powersafegrid.main": "Powersafegrid",
-
   "block.powersafegrid.voltage_relay": "Voltage Relay",
   "block.powersafegrid.stabilizer_120": "Voltage Stabilizer (120 V)",
   "block.powersafegrid.stabilizer_240": "Voltage Stabilizer (240 V)",
-
   "powersafegrid.terminal.relay.input_l": "Positive Input",
   "powersafegrid.terminal.relay.input_n": "Negative Input",
   "powersafegrid.terminal.relay.output_l": "Positive Output",
   "powersafegrid.terminal.relay.output_n": "Negative Output",
-
   "powersafegrid.tooltip.relay.1": "Breaks the load circuit when the voltage leaves the configured range.",
   "powersafegrid.tooltip.relay.2": "Right-click to configure. Reconnects automatically when the voltage returns; overcurrent latches it off.",
   "powersafegrid.tooltip.stabilizer.1": "Keeps the output at %s V while the input is inside the working window.",
   "powersafegrid.tooltip.stabilizer.2": "Working window: %s-%s V. Outside the window it shuts down and latches off.",
   "powersafegrid.tooltip.stabilizer.3": "Over 60 A it smokes and switches off, at 100 A it explodes.",
   "powersafegrid.tooltip.reset": "Reset a tripped device with Create's wrench (or a screwdriver).",
-
   "powersafegrid.gui.relay.status_closed": "Normal (closed)",
   "powersafegrid.gui.relay.status_open": "Tripped - voltage out of range",
   "powersafegrid.gui.relay.status_overload": "Overload - reset required",
   "powersafegrid.gui.relay.measured": "Input: %s V   Current: %s A",
-  "powersafegrid.gui.relay.hint": "Drag the handles or scroll on them\n(Shift = x10).",
-
+  "powersafegrid.gui.relay.hint": "Drag the handles or scroll on them.",
   "powersafegrid.goggles.reset_hint": "Reset with a screwdriver/wrench to re-enable",
   "powersafegrid.goggles.relay.status_header": "Voltage Relay",
   "powersafegrid.goggles.relay.status_closed": "Status: normal (closed)",
@@ -31,7 +26,6 @@
   "powersafegrid.goggles.relay.voltage": "Input voltage: ",
   "powersafegrid.goggles.relay.current": "Current: ",
   "powersafegrid.goggles.relay.range": "Trip range: ",
-
   "powersafegrid.goggles.stabilizer.status_header": "Voltage stabilizer",
   "powersafegrid.goggles.stabilizer.status_running": "Status: normal",
   "powersafegrid.goggles.stabilizer.status_overload": "Status: overload, shut down",
@@ -39,5 +33,7 @@
   "powersafegrid.goggles.stabilizer.target": "Output: ",
   "powersafegrid.goggles.stabilizer.input": "Input voltage: ",
   "powersafegrid.goggles.stabilizer.current": "Output current: ",
-  "powersafegrid.goggles.stabilizer.window": "Working window: "
+  "powersafegrid.goggles.stabilizer.window": "Working window: ",
+  "powersafegrid.goggles.relay.status_burning": "Status: BURNING - about to explode!",
+  "powersafegrid.goggles.stabilizer.status_burning": "Status: BURNING - about to explode!"
 }

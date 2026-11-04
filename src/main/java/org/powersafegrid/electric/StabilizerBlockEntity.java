@@ -69,6 +69,7 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     private Status status = Status.RUNNING;
     private float ratio = 1f;
     private int overloadTimer;
+    private int voltTimer;
     private int burnTimer = -1;
     private boolean primed;
     private boolean playEffects;
@@ -110,6 +111,22 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         return Math.abs(electricBehaviour.getTerminal(0).getVoltage() - electricBehaviour.getTerminal(1).getVoltage());
     }
 
+    /** Voltage across the output terminals. */
+    public double getOutputVoltage() {
+        if (electricBehaviour == null || !electricBehaviour.hasTerminal(3))
+            return 0;
+        return Math.abs(electricBehaviour.getTerminal(2).getVoltage() - electricBehaviour.getTerminal(3).getVoltage());
+    }
+
+    /**
+     * The highest voltage present on either side of the device. Protection
+     * reacts to this, so an overvoltage source is caught no matter which side
+     * it is fed from (or if the other side is left open).
+     */
+    public double monitoredVoltage() {
+        return Math.max(getInputVoltage(), getOutputVoltage());
+    }
+
     public double getOutputCurrent() {
         if (s1w == null || status != Status.RUNNING || burnTimer >= 0)
             return 0;
@@ -140,10 +157,15 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     }
 
     private void trip(Status newStatus) {
+        if (status == newStatus && burnTimer < 0)
+            return;
         status = newStatus;
         applyWireStates(false);
         overloadTimer = 0;
         playEffects = true;
+        PowerSafeGrid.LOGGER.info("Stabilizer at {} tripped ({}), input {} V, output current {} A",
+                worldPosition.toShortString(), newStatus, String.format("%.0f", getInputVoltage()),
+                String.format("%.1f", getOutputCurrent()));
         level.setBlockAndUpdate(worldPosition, getBlockState().setValue(StabilizerBlock.TRIPPED, true));
         ModdedSoundEvents.FUSE_POPS.playOnServer(level, worldPosition, 1f, 0.8f);
         setChanged();
@@ -152,10 +174,14 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
 
     /** Severe overvoltage: smoke for a moment, then explode. */
     private void startBurn() {
+        if (burnTimer >= 0)
+            return;
         status = Status.VOLTAGE;
         applyWireStates(false);
         burnTimer = BURN_TICKS + level.random.nextInt(20);
         playEffects = true;
+        PowerSafeGrid.LOGGER.warn("Stabilizer at {} is burning up, monitored voltage {} V",
+                worldPosition.toShortString(), String.format("%.0f", monitoredVoltage()));
         level.setBlockAndUpdate(worldPosition, getBlockState().setValue(StabilizerBlock.TRIPPED, true));
         ModdedSoundEvents.FUSE_POPS.playOnServer(level, worldPosition, 1.2f, 0.6f);
         setChanged();
@@ -219,11 +245,22 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
             return;
         }
 
-        if (status != Status.RUNNING)
+        if (status != Status.RUNNING) {
+            // Even a tripped (latched off) stabilizer is destroyed when the
+            // overvoltage gets severe enough - insulation breaks down.
+            if (monitoredVoltage() > BURN_VOLTAGE_MULTIPLIER * maxVoltage)
+                startBurn();
             return;
+        }
 
         double uIn = getInputVoltage();
         double iOut = getOutputCurrent();
+
+        float burnLimit = BURN_VOLTAGE_MULTIPLIER * maxVoltage;
+        if (monitoredVoltage() > burnLimit) {
+            startBurn();
+            return;
+        }
 
         if (iOut >= EXPLODE_CURRENT) {
             if (++overloadTimer >= EXPLODE_CONFIRM_TICKS)
@@ -237,16 +274,17 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         }
         overloadTimer = 0;
 
-        float burnLimit = BURN_VOLTAGE_MULTIPLIER * maxVoltage;
-        if (uIn > burnLimit) {
-            startBurn();
+        // Overvoltage is checked on both sides, undervoltage on the input only
+        // (the regulated output legitimately sags near the lower window edge).
+        // Both use a short confirmation window to ride out transients.
+        boolean over = monitoredVoltage() > maxVoltage;
+        boolean under = uIn > 5 && uIn < minVoltage;
+        if (over || under) {
+            if (++voltTimer >= OVERLOAD_CONFIRM_TICKS)
+                trip(Status.VOLTAGE);
             return;
         }
-
-        if (uIn > 5 && (uIn < minVoltage || uIn > maxVoltage)) {
-            trip(Status.VOLTAGE);
-            return;
-        }
+        voltTimer = 0;
 
         // Regulate the output by adjusting the coupling ratio. The feedback loop
         // watches the actual output voltage, compensating both input variation

@@ -13,6 +13,7 @@ import org.powersafegrid.network.PSGPayloads;
 @Mod(PowerSafeGrid.MOD_ID)
 public class PowerSafeGrid {
     public static final String MOD_ID = "powersafegrid";
+    public static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     public PowerSafeGrid(IEventBus modEventBus) {
         PSGBlocks.register(modEventBus);

@@ -52,6 +52,7 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
     private Status status = Status.CLOSED;
 
     private int overloadTimer;
+    private int voltTimer;
     private int reconnectTimer;
     private int burnTimer = -1;
     private boolean primed;
@@ -92,6 +93,21 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
         if (electricBehaviour == null || !electricBehaviour.hasTerminal(1))
             return 0;
         return Math.abs(electricBehaviour.getTerminal(0).getVoltage() - electricBehaviour.getTerminal(1).getVoltage());
+    }
+
+    /** Voltage across the output terminals. */
+    public double getOutputVoltage() {
+        if (electricBehaviour == null || !electricBehaviour.hasTerminal(3))
+            return 0;
+        return Math.abs(electricBehaviour.getTerminal(2).getVoltage() - electricBehaviour.getTerminal(3).getVoltage());
+    }
+
+    /**
+     * The highest voltage present on either side of the relay. Severe
+     * overvoltage burns the relay no matter which side it comes from.
+     */
+    public double monitoredVoltage() {
+        return Math.max(getInputVoltage(), getOutputVoltage());
     }
 
     /** Current through the relay, computed from the (synced) network state. */
@@ -147,6 +163,9 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
         status = Status.OPEN;
         applyWireStates(false);
         reconnectTimer = 0;
+        PowerSafeGrid.LOGGER.info("Voltage relay at {} opened, input voltage {} V (limits {}-{})",
+                worldPosition.toShortString(), String.format("%.0f", getInputVoltage()),
+                String.format("%.0f", lowLimit), String.format("%.0f", highLimit));
         level.setBlockAndUpdate(worldPosition, getBlockState().setValue(VoltageRelayBlock.CLOSED, false));
         ModdedSoundEvents.RELAY_CLICK.playOnServer(level, worldPosition, 0.6f, 0.8f);
         setChanged();
@@ -160,6 +179,8 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
         overloadTimer = 0;
         reconnectTimer = 0;
         playEffects = true;
+        PowerSafeGrid.LOGGER.info("Voltage relay at {} tripped on overload, current {} A",
+                worldPosition.toShortString(), String.format("%.1f", getRelayCurrent()));
         level.setBlockAndUpdate(worldPosition, getBlockState().setValue(VoltageRelayBlock.CLOSED, false));
         ModdedSoundEvents.FUSE_POPS.playOnServer(level, worldPosition, 1f, 0.8f);
         setChanged();
@@ -168,9 +189,13 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
 
     /** Severe overvoltage: smoke for a moment, then explode. */
     private void startBurn() {
+        if (burnTimer >= 0)
+            return;
         applyWireStates(false);
         burnTimer = BURN_TICKS + level.random.nextInt(20);
         playEffects = true;
+        PowerSafeGrid.LOGGER.warn("Voltage relay at {} is burning up, monitored voltage {} V",
+                worldPosition.toShortString(), String.format("%.0f", monitoredVoltage()));
         level.setBlockAndUpdate(worldPosition, getBlockState().setValue(VoltageRelayBlock.CLOSED, false));
         ModdedSoundEvents.FUSE_POPS.playOnServer(level, worldPosition, 1.2f, 0.6f);
         setChanged();
@@ -217,6 +242,13 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
             applyWireStates(burnTimer < 0 && status == Status.CLOSED);
         }
 
+        // A latched-off relay still burns up under severe overvoltage.
+        if (status == Status.OVERLOAD && burnTimer < 0) {
+            if (monitoredVoltage() > BURN_VOLTAGE_MULTIPLIER * highLimit)
+                startBurn();
+            return;
+        }
+
         // Burning countdown regardless of anything else; the relay is done for.
         if (burnTimer >= 0) {
             if (--burnTimer <= 0)
@@ -224,11 +256,14 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
             return;
         }
 
-        if (status == Status.OVERLOAD)
-            return;
-
         double u = getInputVoltage();
         double i = getRelayCurrent();
+
+        float burnLimit = BURN_VOLTAGE_MULTIPLIER * highLimit;
+        if (monitoredVoltage() > burnLimit) {
+            startBurn();
+            return;
+        }
 
         // Overcurrent handling, ordered from most to least severe.
         if (i >= EXPLODE_CURRENT) {
@@ -243,16 +278,19 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
         }
         overloadTimer = 0;
 
-        float burnLimit = BURN_VOLTAGE_MULTIPLIER * highLimit;
-        if (u > burnLimit) {
-            startBurn();
-            return;
-        }
-
         if (status == Status.CLOSED) {
-            if (u > 1 && (u < lowLimit || u > highLimit))
-                setOpen();
+            // Overvoltage is checked on both sides, undervoltage on the input.
+            // A short confirmation window rides out transients.
+            boolean over = monitoredVoltage() > highLimit;
+            boolean under = u > 1 && u < lowLimit;
+            if (over || under) {
+                if (++voltTimer >= OVERLOAD_CONFIRM_TICKS)
+                    setOpen();
+            } else {
+                voltTimer = 0;
+            }
         } else if (status == Status.OPEN) {
+            voltTimer = 0;
             if (u > 1 && u >= lowLimit && u <= highLimit) {
                 if (++reconnectTimer >= RECONNECT_DELAY)
                     setClosed();

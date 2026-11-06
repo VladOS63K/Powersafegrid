@@ -15,6 +15,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -125,6 +127,41 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
         // super constructor, before the multiblock field is assigned.
         builder.add(CONTROLLER);
         builder.add(TRIPPED);
+    }
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable net.minecraft.world.entity.LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        // Auto-build the 2x2x2 cube from a single placement: the placed block
+        // becomes the controller and the remaining 7 positions are filled with
+        // shells (when there is room).
+        if (!multiblock || level.isClientSide || !(level instanceof ServerLevel server))
+            return;
+        for (int x = 0; x < 2; x++) {
+            for (int y = 0; y < 2; y++) {
+                for (int z = 0; z < 2; z++) {
+                    if (x == 0 && y == 0 && z == 0)
+                        continue;
+                    if (!level.getBlockState(pos.offset(x, y, z)).canBeReplaced()) {
+                        PowerSafeGrid.LOGGER.info("Inverter at {} could not auto-build: no room at +X/+Y/+Z",
+                                pos.toShortString());
+                        return;
+                    }
+                }
+            }
+        }
+        for (int x = 0; x < 2; x++) {
+            for (int y = 0; y < 2; y++) {
+                for (int z = 0; z < 2; z++) {
+                    if (x == 0 && y == 0 && z == 0)
+                        continue;
+                    level.setBlock(pos.offset(x, y, z), state.setValue(CONTROLLER, false), 3);
+                }
+            }
+        }
+        level.setBlock(pos, state.setValue(CONTROLLER, true), 3);
+        if (level.getBlockEntity(pos) instanceof InverterBlockEntity be)
+            be.onControllerChanged();
     }
 
     @Override

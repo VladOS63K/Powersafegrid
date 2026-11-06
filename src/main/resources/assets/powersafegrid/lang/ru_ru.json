@@ -49,7 +49,7 @@
   "block.powersafegrid.mini_inverter": "Мини-инвертер напряжения",
   "powersafegrid.tooltip.auto_stabilizer.1": "Сам сбрасывается через ~3 с после возврата напряжения в норму.",
   "powersafegrid.tooltip.inverter.1": "Преобразует вход до %s В в 0-100 %% от него. Регулировка — прокрутка ключом на задней грани.",
-  "powersafegrid.tooltip.inverter.2": "Собирается в куб 2x2x2 из 8 блоков. Провода крепятся к граням собранного куба.",
+  "powersafegrid.tooltip.inverter.2": "При установке сам достраивает куб 2x2x2 (нужно свободное место в сторону +X/+Y/+Z). Провода крепятся к граням собранного куба.",
   "powersafegrid.tooltip.inverter.3": "Перегрузка: %s А — дым и отключение, %s А — взрыв.",
   "powersafegrid.devices.inverter.setting": "Коэффициент выхода",
   "powersafegrid.goggles.inverter.status_header": "Инвертер напряжения",

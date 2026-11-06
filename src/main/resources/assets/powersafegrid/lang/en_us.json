@@ -49,7 +49,7 @@
   "block.powersafegrid.mini_inverter": "Mini Voltage Inverter",
   "powersafegrid.tooltip.auto_stabilizer.1": "Automatically resets ~3 s after the voltage returns to normal.",
   "powersafegrid.tooltip.inverter.1": "Converts up to %s V input to 0-100 %% of it. Adjust with the wrench scroll box on the back.",
-  "powersafegrid.tooltip.inverter.2": "Forms a 2x2x2 cube from 8 blocks. Wires attach to the assembled cube's faces.",
+  "powersafegrid.tooltip.inverter.2": "Automatically builds a 2x2x2 cube on placement (needs free space towards +X/+Y/+Z). Wires attach to the assembled cube's faces.",
   "powersafegrid.tooltip.inverter.3": "Overcurrent: %s A trips with smoke, %s A explodes.",
   "powersafegrid.devices.inverter.setting": "Output ratio",
   "powersafegrid.goggles.inverter.status_header": "Voltage inverter",

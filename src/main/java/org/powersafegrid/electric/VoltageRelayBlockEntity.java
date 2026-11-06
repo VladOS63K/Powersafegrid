@@ -19,6 +19,7 @@ import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.powersafegrid.PowerSafeGrid;
 import org.powersafegrid.gui.VoltageRelayMenu;
 
@@ -88,15 +89,34 @@ public class VoltageRelayBlockEntity extends ElectricBlockEntity implements IHav
         return burnTimer >= 0;
     }
 
-    /** Voltage across the input terminals, valid on both sides. */
+    /**
+     * Whether both terminals of a measurement pair actually have wire
+     * connections. Protection only reacts to voltage that is measured across a
+     * complete pair - a single floating wire held at 25 kV by its source is
+     * not a fault.
+     */
+    protected boolean pairWired(int a, int b) {
+        if (electricBehaviour == null || !electricBehaviour.hasTerminal(b))
+            return false;
+        var connections = electricBehaviour.getConnections();
+        var connsA = connections.get(new BlockWireEndpoint(worldPosition, a));
+        var connsB = connections.get(new BlockWireEndpoint(worldPosition, b));
+        return connsA != null && !connsA.isEmpty() && connsB != null && !connsB.isEmpty();
+    }
+
+    /** Voltage across the input terminals. Returns 0 unless the pair is fully wired. */
     public double getInputVoltage() {
+        if (!pairWired(0, 1))
+            return 0;
         if (electricBehaviour == null || !electricBehaviour.hasTerminal(1))
             return 0;
         return Math.abs(electricBehaviour.getTerminal(0).getVoltage() - electricBehaviour.getTerminal(1).getVoltage());
     }
 
-    /** Voltage across the output terminals. */
+    /** Voltage across the output terminals. Returns 0 unless the pair is fully wired. */
     public double getOutputVoltage() {
+        if (!pairWired(2, 3))
+            return 0;
         if (electricBehaviour == null || !electricBehaviour.hasTerminal(3))
             return 0;
         return Math.abs(electricBehaviour.getTerminal(2).getVoltage() - electricBehaviour.getTerminal(3).getVoltage());

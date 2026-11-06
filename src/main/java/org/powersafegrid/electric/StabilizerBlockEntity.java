@@ -79,6 +79,7 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
     private Status clientStatus = Status.RUNNING;
     private boolean clientBurning;
     private int syncTimer;
+    private int recoverTimer;
     private boolean primed;
     private boolean playEffects;
 
@@ -155,6 +156,16 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         return targetVoltage;
     }
 
+    /** Whether a tripped device recovers by itself (auto stabilizer variant). */
+    protected boolean autoRecover() {
+        return false;
+    }
+
+    /** Ticks the input has to stay normal before an auto recovery fires. */
+    protected int autoRecoverDelay() {
+        return 60;
+    }
+
     private void applyWireStates(boolean closed) {
         if (p1w != null) {
             p1w.setState(false);
@@ -221,6 +232,8 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         if (coupling != null)
             coupling.setRatio(ratio);
         overloadTimer = 0;
+        voltTimer = 0;
+        recoverTimer = 0;
         level.setBlockAndUpdate(worldPosition, getBlockState().setValue(StabilizerBlock.TRIPPED, false));
         ModdedSoundEvents.CONTACTOR_ON.playOnServer(level, worldPosition, 0.8f, 1f);
         setChanged();
@@ -279,6 +292,22 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
             // overvoltage gets severe enough - insulation breaks down.
             if (monitoredVoltage() > BURN_VOLTAGE_MULTIPLIER * maxVoltage)
                 startBurn();
+            else if (autoRecover()) {
+                double uIn = getInputVoltage();
+                boolean normal = switch (status) {
+                    case VOLTAGE -> uIn > 5 && uIn >= minVoltage && uIn <= maxVoltage;
+                    case OVERLOAD -> uIn <= 5 || (uIn >= minVoltage && uIn <= maxVoltage);
+                    default -> false;
+                };
+                if (normal) {
+                    if (++recoverTimer >= autoRecoverDelay()) {
+                        recoverTimer = 0;
+                        reset();
+                    }
+                } else {
+                    recoverTimer = 0;
+                }
+            }
             return;
         }
 

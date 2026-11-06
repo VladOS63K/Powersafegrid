@@ -29,6 +29,18 @@ public class PSGBlocks {
             BLOCKS.register("creative_stabilizer_240",
                     () -> new CreativeStabilizerBlock(properties().mapColor(MapColor.COLOR_PURPLE), 240f));
 
+    public static final DeferredBlock<AutoStabilizerBlock> AUTO_STABILIZER_120 =
+            BLOCKS.register("auto_stabilizer_120", () -> new AutoStabilizerBlock(properties(), 120f, 90f, 130f));
+
+    public static final DeferredBlock<AutoStabilizerBlock> AUTO_STABILIZER_240 =
+            BLOCKS.register("auto_stabilizer_240", () -> new AutoStabilizerBlock(properties(), 240f, 190f, 250f));
+
+    public static final DeferredBlock<InverterBlock> INVERTER =
+            BLOCKS.register("inverter", () -> new InverterBlock(properties(), true, 4000f, 60f, 100f));
+
+    public static final DeferredBlock<InverterBlock> MINI_INVERTER =
+            BLOCKS.register("mini_inverter", () -> new InverterBlock(properties(), false, 1000f, 15f, 25f));
+
     public static BlockBehaviour.Properties properties() {
         return BlockBehaviour.Properties.of()
                 .mapColor(MapColor.METAL)

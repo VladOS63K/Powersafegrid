@@ -28,12 +28,32 @@ public class PSGBlockEntities {
                     PSGBlocks.CREATIVE_STABILIZER_120.get(),
                     PSGBlocks.CREATIVE_STABILIZER_240.get()).build(null));
 
+    public static final Supplier<BlockEntityType<AutoStabilizerBlockEntity>> AUTO_STABILIZER =
+            BLOCK_ENTITIES.register("auto_stabilizer", () -> BlockEntityType.Builder.of(
+                    (pos, state) -> new AutoStabilizerBlockEntity(autoType(), pos, state),
+                    PSGBlocks.AUTO_STABILIZER_120.get(),
+                    PSGBlocks.AUTO_STABILIZER_240.get()).build(null));
+
+    public static final Supplier<BlockEntityType<InverterBlockEntity>> INVERTER =
+            BLOCK_ENTITIES.register("inverter", () -> BlockEntityType.Builder.of(
+                    (pos, state) -> new InverterBlockEntity(inverterType(), pos, state),
+                    PSGBlocks.INVERTER.get(),
+                    PSGBlocks.MINI_INVERTER.get()).build(null));
+
     private static BlockEntityType<VoltageRelayBlockEntity> relayType() {
         return VOLTAGE_RELAY.get();
     }
 
     private static BlockEntityType<CreativeStabilizerBlockEntity> creativeType() {
         return CREATIVE_STABILIZER.get();
+    }
+
+    private static BlockEntityType<AutoStabilizerBlockEntity> autoType() {
+        return AUTO_STABILIZER.get();
+    }
+
+    private static BlockEntityType<InverterBlockEntity> inverterType() {
+        return INVERTER.get();
     }
 
     private static BlockEntityType<StabilizerBlockEntity> stabilizerType() {

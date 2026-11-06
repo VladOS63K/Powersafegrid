@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powersafegrid:block/auto_stabilizer_120"
+    },
+    "facing=east": {
+      "model": "powersafegrid:block/auto_stabilizer_120",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powersafegrid:block/auto_stabilizer_120",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powersafegrid:block/auto_stabilizer_120",
+      "y": 270
+    }
+  }
+}

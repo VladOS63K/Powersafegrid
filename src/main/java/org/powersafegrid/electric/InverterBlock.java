@@ -196,7 +196,7 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
      * and none of them belongs to another complete cube. The lowest corner
      * becomes the controller.
      */
-    private void updateFormation(ServerLevel level, BlockPos pos) {
+    public void updateFormation(ServerLevel level, BlockPos pos) {
         BlockPos anchor = findCubeAnchor(level, pos);
         BlockPos min = pos.subtract(new BlockPos(1, 1, 1));
         for (int x = 0; x < 3; x++) {

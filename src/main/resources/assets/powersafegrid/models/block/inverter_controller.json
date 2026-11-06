@@ -7,7 +7,8 @@
     "0": "powersafegrid:block/inverter_casing_front",
     "particle": "powersafegrid:block/inverter_side",
     "6": "powersafegrid:block/inverter_controller_front",
-    "5": "powersafegrid:block/terminal"
+    "5": "powersafegrid:block/terminal",
+    "7": "powersafegrid:block/inverter_controller_bottom"
   },
   "elements": [
     {
@@ -57,7 +58,7 @@
             16,
             16
           ],
-          "texture": "#1"
+          "texture": "#6"
         },
         "up": {
           "uv": [
@@ -75,7 +76,7 @@
             16,
             16
           ],
-          "texture": "#3"
+          "texture": "#7"
         }
       }
     },

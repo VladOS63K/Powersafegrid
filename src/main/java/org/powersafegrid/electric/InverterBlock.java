@@ -25,10 +25,13 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.WireConnection;
 import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.powersafegrid.PowerSafeGrid;
@@ -167,10 +170,8 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
                     boolean shouldBeController = anchor != null && p.equals(anchor);
                     if (s.getValue(CONTROLLER) != shouldBeController) {
                         level.setBlock(p, s.setValue(CONTROLLER, shouldBeController), 3);
-                        if (level.getBlockEntity(p) instanceof InverterBlockEntity be) {
-                            be.electricBehaviour.rebuildCircuit(true);
-                            be.notifyUpdate();
-                        }
+                        if (level.getBlockEntity(p) instanceof InverterBlockEntity be)
+                            be.onControllerChanged();
                     }
                 }
             }
@@ -255,11 +256,48 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
                 var remapped = new UseOnContext(level, context.getPlayer(), context.getHand(), context.getItemInHand(), hit);
                 var controllerState = level.getBlockState(controllerPos);
                 if (controllerState.getBlock() instanceof InverterBlock)
-                    return IElectric.super.onWire(controllerState, remapped);
+                    return onWireAt(controllerState, remapped);
                 return InteractionResult.PASS;
             }
         }
-        return IElectric.super.onWire(state, context);
+        return onWireAt(state, context);
+    }
+
+    /**
+     * Faithful copy of {@code IElectric.onWire}, with the wire endpoint bound
+     * to the block position of the passed-in state (the multiblock controller
+     * for shell clicks).
+     */
+    private InteractionResult onWireAt(BlockState state, UseOnContext context) {
+        var stack = context.getItemInHand();
+        var pos = context.getClickedPos();
+        var terminal = terminalIndexAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        if (terminal < 0)
+            return InteractionResult.PASS;
+        if (!accepts(context.getItemInHand())) {
+            feedback(context, Component.translatable("powergrid.message.connection_incorrect_wire_type").withStyle(ChatFormatting.RED));
+            return InteractionResult.FAIL;
+        }
+        if (stack.has(ModdedDataComponents.CONNECTION_DATA.get())) {
+            // Continuing a connection.
+            var endpoint = stack.get(ModdedDataComponents.CONNECTION_DATA.get()).endpoint();
+            if (endpoint == null)
+                return InteractionResult.FAIL;
+            var result = IElectric.makeConnection(context.getLevel(), endpoint, new BlockWireEndpoint(pos, terminal), context);
+            if (result.consumesAction())
+                stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
+            return result;
+        }
+        // Must be the first connection.
+        var endpoint = new BlockWireEndpoint(pos, terminal);
+        stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(endpoint));
+        feedback(context, Component.translatable("powergrid.message.connection_next").withStyle(ChatFormatting.GRAY));
+        return InteractionResult.SUCCESS;
+    }
+
+    private static void feedback(UseOnContext context, Component text) {
+        if (context.getPlayer() != null)
+            context.getPlayer().displayClientMessage(text, true);
     }
 
     @Override

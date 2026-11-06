@@ -24,12 +24,7 @@ public class AutoStabilizerBlock extends StabilizerBlock {
     }
 
     @Override
-    public Class<AutoStabilizerBlockEntity> getBlockEntityClass() {
-        return AutoStabilizerBlockEntity.class;
-    }
-
-    @Override
-    public BlockEntityType<? extends StabilizerBlockEntity> getBlockEntityType() {
+    public BlockEntityType<AutoStabilizerBlockEntity> getBlockEntityType() {
         return PSGBlockEntities.AUTO_STABILIZER.get();
     }
 

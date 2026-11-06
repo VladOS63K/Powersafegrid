@@ -114,6 +114,12 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
         return !multiblock || getBlockState().getValue(InverterBlock.CONTROLLER);
     }
 
+    /** Called by the block when the multiblock controller flag flips. */
+    public void onControllerChanged() {
+        electricBehaviour.rebuildCircuit(true);
+        notifyUpdate();
+    }
+
     public float getPercent() {
         return percentSetting != null ? Mth.clamp(percentSetting.value, 0, 100) : 100;
     }

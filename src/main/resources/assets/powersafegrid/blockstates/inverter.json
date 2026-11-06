@@ -1,63 +1,63 @@
 {
   "variants": {
-    "controller=true,tripped=true,facing=north": {
-      "model": "powersafegrid:block/inverter_controller"
-    },
-    "controller=true,tripped=false,facing=north": {
-      "model": "powersafegrid:block/inverter_controller"
-    },
-    "controller=false,tripped=true,facing=north": {
+    "controller=false,facing=north,tripped=false": {
       "model": "powersafegrid:block/inverter_casing"
     },
-    "controller=false,tripped=false,facing=north": {
+    "controller=false,facing=north,tripped=true": {
       "model": "powersafegrid:block/inverter_casing"
     },
-    "controller=true,tripped=true,facing=east": {
-      "model": "powersafegrid:block/inverter_controller",
-      "y": 90
+    "controller=true,facing=north,tripped=false": {
+      "model": "powersafegrid:block/inverter_controller"
     },
-    "controller=true,tripped=false,facing=east": {
-      "model": "powersafegrid:block/inverter_controller",
-      "y": 90
+    "controller=true,facing=north,tripped=true": {
+      "model": "powersafegrid:block/inverter_controller"
     },
-    "controller=false,tripped=true,facing=east": {
+    "controller=false,facing=east,tripped=false": {
       "model": "powersafegrid:block/inverter_casing",
       "y": 90
     },
-    "controller=false,tripped=false,facing=east": {
+    "controller=false,facing=east,tripped=true": {
       "model": "powersafegrid:block/inverter_casing",
       "y": 90
     },
-    "controller=true,tripped=true,facing=south": {
+    "controller=true,facing=east,tripped=false": {
       "model": "powersafegrid:block/inverter_controller",
-      "y": 180
+      "y": 90
     },
-    "controller=true,tripped=false,facing=south": {
+    "controller=true,facing=east,tripped=true": {
       "model": "powersafegrid:block/inverter_controller",
-      "y": 180
+      "y": 90
     },
-    "controller=false,tripped=true,facing=south": {
+    "controller=false,facing=south,tripped=false": {
       "model": "powersafegrid:block/inverter_casing",
       "y": 180
     },
-    "controller=false,tripped=false,facing=south": {
+    "controller=false,facing=south,tripped=true": {
       "model": "powersafegrid:block/inverter_casing",
       "y": 180
     },
-    "controller=true,tripped=true,facing=west": {
+    "controller=true,facing=south,tripped=false": {
+      "model": "powersafegrid:block/inverter_controller",
+      "y": 180
+    },
+    "controller=true,facing=south,tripped=true": {
+      "model": "powersafegrid:block/inverter_controller",
+      "y": 180
+    },
+    "controller=false,facing=west,tripped=false": {
+      "model": "powersafegrid:block/inverter_casing",
+      "y": 270
+    },
+    "controller=false,facing=west,tripped=true": {
+      "model": "powersafegrid:block/inverter_casing",
+      "y": 270
+    },
+    "controller=true,facing=west,tripped=false": {
       "model": "powersafegrid:block/inverter_controller",
       "y": 270
     },
-    "controller=true,tripped=false,facing=west": {
+    "controller=true,facing=west,tripped=true": {
       "model": "powersafegrid:block/inverter_controller",
-      "y": 270
-    },
-    "controller=false,tripped=true,facing=west": {
-      "model": "powersafegrid:block/inverter_casing",
-      "y": 270
-    },
-    "controller=false,tripped=false,facing=west": {
-      "model": "powersafegrid:block/inverter_casing",
       "y": 270
     }
   }

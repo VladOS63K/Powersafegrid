@@ -88,6 +88,7 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
         if (multiblock) {
             setTerminalCollection(horizontalNorthTerminals(this, MULTIBLOCK_TERMINALS_NORTH, Shapes.block()));
         } else {
+            registerDefaultState(defaultBlockState().setValue(CONTROLLER, true));
             setTerminalCollection(horizontalNorthTerminals(this, SINGLE_TERMINALS_NORTH, SINGLE_SHAPE_NORTH));
         }
     }
@@ -120,8 +121,9 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        if (multiblock)
-            builder.add(CONTROLLER);
+        // CONTROLLER must be added unconditionally: this method runs from the
+        // super constructor, before the multiblock field is assigned.
+        builder.add(CONTROLLER);
         builder.add(TRIPPED);
     }
 

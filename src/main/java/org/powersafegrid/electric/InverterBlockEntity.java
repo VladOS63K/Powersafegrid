@@ -285,7 +285,8 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
             display = null;
         }
         if (display == null) {
-            if (displayId != null && level.getEntity(displayId) instanceof Display.TextDisplay found) {
+            if (displayId != null && level instanceof net.minecraft.server.level.ServerLevel server
+                    && server.getEntity(displayId) instanceof Display.TextDisplay found) {
                 display = found;
             } else {
                 display = new Display.TextDisplay(EntityType.TEXT_DISPLAY, level);
@@ -299,17 +300,15 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
                 setChanged();
             }
         }
-        boolean off = isTripped();
-        if (off) {
-            display.setLine1(Component.translatable(PowerSafeGrid.MOD_ID + ".display.off").withStyle(ChatFormatting.RED));
-        } else {
-            display.setLine1(Component.translatable(PowerSafeGrid.MOD_ID + ".display.output")
-                    .append(Component.literal(String.format("%.0f V", getOutputVoltage())).withStyle(ChatFormatting.AQUA)));
-        }
-        display.setLine2(Component.translatable(PowerSafeGrid.MOD_ID + ".display.input")
+        Component line1 = off
+                ? Component.translatable(PowerSafeGrid.MOD_ID + ".display.off").withStyle(ChatFormatting.RED)
+                : Component.translatable(PowerSafeGrid.MOD_ID + ".display.output")
+                        .append(Component.literal(String.format("%.0f V", getOutputVoltage())).withStyle(ChatFormatting.AQUA));
+        Component line2 = Component.translatable(PowerSafeGrid.MOD_ID + ".display.input")
                 .append(Component.literal(String.format("%.0f V", getInputVoltage())).withStyle(ChatFormatting.WHITE))
                 .append(Component.literal("  |  ").withStyle(ChatFormatting.DARK_GRAY))
-                .append(Component.literal(String.format("%.1f A", getOutputCurrent())).withStyle(ChatFormatting.YELLOW)));
+                .append(Component.literal(String.format("%.1f A", getOutputCurrent())).withStyle(ChatFormatting.YELLOW));
+        display.setText(Component.empty().append(line1).append(Component.literal("\n")).append(line2));
     }
 
     @Override

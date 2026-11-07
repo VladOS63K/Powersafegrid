@@ -10,6 +10,9 @@ base {
     archivesName = mod_id
 }
 
+// Widens private Display entity members for the text display holograms
+minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 runs {

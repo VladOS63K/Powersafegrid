@@ -36,7 +36,7 @@ public class PSGBlocks {
             BLOCKS.register("auto_stabilizer_240", () -> new AutoStabilizerBlock(properties(), 240f, 190f, 250f));
 
     public static final DeferredBlock<InverterBlock> MINI_INVERTER =
-            BLOCKS.register("mini_inverter", () -> new InverterBlock(properties(), false, 1000f, 15f, 25f));
+            BLOCKS.register("mini_inverter", () -> new InverterBlock(properties(), 1000f, 15f, 25f));
 
     public static BlockBehaviour.Properties properties() {
         return BlockBehaviour.Properties.of()

@@ -82,6 +82,12 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
     private boolean clientBurning;
     private int syncTimer;
 
+    /** Text display hologram above the block (server side). */
+    @Nullable
+    private Display.TextDisplay display;
+    @Nullable
+    private java.util.UUID displayId;
+
     public InverterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         if (state.getBlock() instanceof InverterBlock block) {
@@ -307,12 +313,12 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
     }
 
     @Override
-    public void setRemoved() {
+    public void remove() {
         if (display != null) {
             display.discard();
             display = null;
         }
-        super.setRemoved();
+        super.remove();
     }
 
     @Override

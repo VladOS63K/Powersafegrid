@@ -192,12 +192,12 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
 
     /**
      * Re-evaluates multiblock formation around {@code pos}. A cube is complete
-     * when all 8 positions of a 2x2x2 section hold multiblock converter blocks
-     * and none of them belongs to another complete cube. The lowest corner
-     * becomes the controller.
+     * when all 8 positions of a 2x2x2 section hold multiblock converter blocks.
+     * The lowest corner becomes the controller. An existing controller is kept
+     * as long as its own cube is complete, so leftover blocks next to a formed
+     * cube can never steal or demote it.
      */
     public void updateFormation(ServerLevel level, BlockPos pos) {
-        BlockPos anchor = findCubeAnchor(level, pos);
         BlockPos min = pos.subtract(new BlockPos(1, 1, 1));
         for (int x = 0; x < 3; x++) {
             for (int y = 0; y < 3; y++) {
@@ -206,9 +206,19 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
                     BlockState s = level.getBlockState(p);
                     if (!(s.getBlock() instanceof InverterBlock block) || !block.multiblock)
                         continue;
-                    boolean shouldBeController = anchor != null && p.equals(anchor);
-                    if (s.getValue(CONTROLLER) != shouldBeController) {
-                        level.setBlock(p, s.setValue(CONTROLLER, shouldBeController), 3);
+                    boolean current = s.getValue(CONTROLLER);
+                    boolean shouldBe;
+                    if (current) {
+                        // Keep an existing controller while its own cube is complete.
+                        shouldBe = findCubeAnchor(level, p) != null;
+                    } else {
+                        // Unclaimed block: becomes the controller of the complete
+                        // section containing it, if this position is its anchor.
+                        BlockPos anchor = findCubeAnchor(level, p);
+                        shouldBe = anchor != null && p.equals(anchor);
+                    }
+                    if (current != shouldBe) {
+                        level.setBlock(p, s.setValue(CONTROLLER, shouldBe), 3);
                         if (level.getBlockEntity(p) instanceof InverterBlockEntity be)
                             be.onControllerChanged();
                     }
@@ -244,36 +254,6 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
                         return false;
                     // A block that is the controller of another cube section cannot join this one.
                     if (s.getValue(CONTROLLER) && !p.equals(anchor))
-                        return false;
-                }
-            }
-        }
-        // Do not allow cubes to share blocks with other complete cubes.
-        for (int x = 0; x < 2; x++) {
-            for (int y = 0; y < 2; y++) {
-                for (int z = 0; z < 2; z++) {
-                    BlockPos p = anchor.offset(x, y, z);
-                    for (int dx = 1; dx >= 0; dx--) {
-                        for (int dy = 1; dy >= 0; dy--) {
-                            for (int dz = 1; dz >= 0; dz--) {
-                                BlockPos other = p.subtract(new BlockPos(dx, dy, dz));
-                                if (!other.equals(anchor) && isPlainCompleteCube(level, other))
-                                    return false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    private boolean isPlainCompleteCube(ServerLevel level, BlockPos anchor) {
-        for (int x = 0; x < 2; x++) {
-            for (int y = 0; y < 2; y++) {
-                for (int z = 0; z < 2; z++) {
-                    BlockState s = level.getBlockState(anchor.offset(x, y, z));
-                    if (!(s.getBlock() instanceof InverterBlock block) || !block.multiblock)
                         return false;
                 }
             }

@@ -16,6 +16,9 @@
     },
     "G": {
       "item": "minecraft:gold_ingot"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
     }
   },
   "result": {

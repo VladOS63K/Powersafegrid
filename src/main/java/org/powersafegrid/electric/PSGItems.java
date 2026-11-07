@@ -31,9 +31,6 @@ public class PSGItems {
     public static final DeferredItem<BlockItem> AUTO_STABILIZER_240 =
             ITEMS.registerSimpleBlockItem(PSGBlocks.AUTO_STABILIZER_240);
 
-    public static final DeferredItem<BlockItem> INVERTER =
-            ITEMS.registerSimpleBlockItem(PSGBlocks.INVERTER);
-
     public static final DeferredItem<BlockItem> MINI_INVERTER =
             ITEMS.registerSimpleBlockItem(PSGBlocks.MINI_INVERTER);
 

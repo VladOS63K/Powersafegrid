@@ -36,12 +36,12 @@ import org.powersafegrid.PowerSafeGrid;
 import java.util.List;
 
 /**
- * Adjustable autotransformer rendered as a 2x2x2 machine. Occupies a single
- * block cell; the model extends towards +X/+Y/+Z for visuals only. Converts
- * the input voltage (up to the rated maximum) to 0-100 % of it, selected with
- * a scroll value box. Protection mirrors the stabilizer: moderate overvoltage
+ * Compact adjustable autotransformer occupying a single block. Converts the
+ * input voltage (up to the rated maximum) to 0-100 % of it, selected with a
+ * scroll value box. Protection mirrors the stabilizer: moderate overvoltage
  * latches the device off, severe overvoltage (3x the rated maximum) burns it
- * up, overcurrent smokes and latches off / explodes.
+ * up, overcurrent smokes and latches off / explodes. Live measurements are
+ * shown on a text display hologram above the block.
  */
 @MethodsReturnNonnullByDefault
 public class InverterBlock extends HorizontalElectricBlock implements IBE<InverterBlockEntity>, IAcceptCord {
@@ -53,45 +53,30 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
     public static final Component TERMINAL_OUTPUT_L = VoltageRelayBlock.TERMINAL_OUTPUT_L;
     public static final Component TERMINAL_OUTPUT_N = VoltageRelayBlock.TERMINAL_OUTPUT_N;
 
-    /** Terminals of the big variant: on the faces of the 2x2x2 visual cube. */
-    private static final TerminalBoundingBox[] BIG_TERMINALS_NORTH = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(TERMINAL_INPUT_L, 2, 5, -2, 5, 8, 2),
-            new TerminalBoundingBox(TERMINAL_INPUT_N, 11, 5, -2, 14, 8, 2),
-            new TerminalBoundingBox(TERMINAL_OUTPUT_L, 2, 5, 30, 5, 8, 34),
-            new TerminalBoundingBox(TERMINAL_OUTPUT_N, 11, 5, 30, 14, 8, 34),
-    };
-
-    /** Terminals of the compact variant: on its own back and front faces. */
-    private static final TerminalBoundingBox[] COMPACT_TERMINALS_NORTH = new TerminalBoundingBox[] {
+    private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
             new TerminalBoundingBox(TERMINAL_INPUT_L, 2, 4, 14, 5, 7, 16),
             new TerminalBoundingBox(TERMINAL_INPUT_N, 11, 4, 14, 14, 7, 16),
             new TerminalBoundingBox(TERMINAL_OUTPUT_L, 2, 4, 0, 5, 7, 2),
             new TerminalBoundingBox(TERMINAL_OUTPUT_N, 11, 4, 0, 14, 7, 2),
     };
 
-    private static final VoxelShape COMPACT_SHAPE_NORTH = Shapes.or(
+    private static final VoxelShape SHAPE_NORTH = Shapes.or(
             Shapes.box(1 / 16.0, 0, 2 / 16.0, 15 / 16.0, 14 / 16.0, 14 / 16.0),
             Shapes.box(2 / 16.0, 4 / 16.0, 14 / 16.0, 5 / 16.0, 7 / 16.0, 1),
             Shapes.box(11 / 16.0, 4 / 16.0, 14 / 16.0, 14 / 16.0, 7 / 16.0, 1),
             Shapes.box(2 / 16.0, 4 / 16.0, 0, 5 / 16.0, 7 / 16.0, 2 / 16.0),
             Shapes.box(11 / 16.0, 4 / 16.0, 0, 14 / 16.0, 7 / 16.0, 2 / 16.0));
 
-    private final boolean big;
     private final float maxInput;
     private final float overloadCurrent;
     private final float explodeCurrent;
 
-    public InverterBlock(Properties properties, boolean big, float maxInput, float overloadCurrent, float explodeCurrent) {
+    public InverterBlock(Properties properties, float maxInput, float overloadCurrent, float explodeCurrent) {
         super(properties);
-        this.big = big;
         this.maxInput = maxInput;
         this.overloadCurrent = overloadCurrent;
         this.explodeCurrent = explodeCurrent;
-        if (big) {
-            setTerminalCollection(horizontalNorthTerminals(this, BIG_TERMINALS_NORTH, Shapes.block()));
-        } else {
-            setTerminalCollection(horizontalNorthTerminals(this, COMPACT_TERMINALS_NORTH, COMPACT_SHAPE_NORTH));
-        }
+        setTerminalCollection(horizontalNorthTerminals(this, TERMINALS_NORTH, SHAPE_NORTH));
     }
 
     public float getMaxInput() {
@@ -165,15 +150,6 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
         return InteractionResult.SUCCESS;
     }
 
-    public boolean isBig() {
-        return big;
-    }
-
-    @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return big ? Shapes.block() : super.getShape(state, level, pos, context);
-    }
-
     @Override
     public Class<InverterBlockEntity> getBlockEntityClass() {
         return InverterBlockEntity.class;
@@ -188,7 +164,6 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.inverter.1",
                 String.format("%.0f", maxInput)).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.inverter.4").withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.inverter.3",
                 String.format("%.0f", overloadCurrent), String.format("%.0f", explodeCurrent)).withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.reset").withStyle(ChatFormatting.AQUA));

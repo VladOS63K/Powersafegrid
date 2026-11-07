@@ -12,7 +12,10 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
@@ -266,7 +269,50 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
         if (++syncTimer >= 4) {
             syncTimer = 0;
             sendData();
+            updateDisplay();
         }
+    }
+
+    /** Keeps the text display hologram above the block in sync with the measurements. */
+    private void updateDisplay() {
+        if (display != null && (display.isRemoved() || display.level() != level)) {
+            display = null;
+        }
+        if (display == null) {
+            if (displayId != null && level.getEntity(displayId) instanceof Display.TextDisplay found) {
+                display = found;
+            } else {
+                display = new Display.TextDisplay(EntityType.TEXT_DISPLAY, level);
+                display.setPos(worldPosition.getX() + 0.5, worldPosition.getY() + 1.15, worldPosition.getZ() + 0.5);
+                display.setBillboardConstraints(Display.BillboardConstraints.CENTER);
+                display.setInvulnerable(true);
+                if (displayId != null)
+                    display.setUUID(displayId);
+                level.addFreshEntity(display);
+                displayId = display.getUUID();
+                setChanged();
+            }
+        }
+        boolean off = isTripped();
+        if (off) {
+            display.setLine1(Component.translatable(PowerSafeGrid.MOD_ID + ".display.off").withStyle(ChatFormatting.RED));
+        } else {
+            display.setLine1(Component.translatable(PowerSafeGrid.MOD_ID + ".display.output")
+                    .append(Component.literal(String.format("%.0f V", getOutputVoltage())).withStyle(ChatFormatting.AQUA)));
+        }
+        display.setLine2(Component.translatable(PowerSafeGrid.MOD_ID + ".display.input")
+                .append(Component.literal(String.format("%.0f V", getInputVoltage())).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal("  |  ").withStyle(ChatFormatting.DARK_GRAY))
+                .append(Component.literal(String.format("%.1f A", getOutputCurrent())).withStyle(ChatFormatting.YELLOW)));
+    }
+
+    @Override
+    public void setRemoved() {
+        if (display != null) {
+            display.discard();
+            display = null;
+        }
+        super.setRemoved();
     }
 
     @Override
@@ -360,6 +406,7 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
         status = Status.VALUES[tag.getByte("Status") % Status.VALUES.length];
         ratio = tag.contains("Ratio") ? tag.getFloat("Ratio") : 1f;
         burnTimer = tag.contains("Burning") ? BURN_TICKS : -1;
+        displayId = tag.hasUUID("DisplayId") ? tag.getUUID("DisplayId") : null;
         if (clientPacket) {
             clientUIn = tag.getFloat("ClUIn");
             clientUOut = tag.getFloat("ClUOut");
@@ -380,6 +427,8 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
         tag.putFloat("Ratio", ratio);
         if (burnTimer >= 0)
             tag.putBoolean("Burning", true);
+        if (displayId != null)
+            tag.putUUID("DisplayId", displayId);
         if (clientPacket) {
             tag.putFloat("ClUIn", (float) getInputVoltage());
             tag.putFloat("ClUOut", (float) getOutputVoltage());

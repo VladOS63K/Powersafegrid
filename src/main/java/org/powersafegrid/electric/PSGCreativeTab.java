@@ -25,7 +25,6 @@ public class PSGCreativeTab {
                         output.accept(PSGBlocks.AUTO_STABILIZER_240.get());
                         output.accept(PSGBlocks.CREATIVE_STABILIZER_120.get());
                         output.accept(PSGBlocks.CREATIVE_STABILIZER_240.get());
-                        output.accept(PSGBlocks.INVERTER.get());
                         output.accept(PSGBlocks.MINI_INVERTER.get());
                     })
                     .build());

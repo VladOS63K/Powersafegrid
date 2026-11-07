@@ -37,7 +37,6 @@ public class PSGBlockEntities {
     public static final Supplier<BlockEntityType<InverterBlockEntity>> INVERTER =
             BLOCK_ENTITIES.register("inverter", () -> BlockEntityType.Builder.of(
                     (pos, state) -> new InverterBlockEntity(inverterType(), pos, state),
-                    PSGBlocks.INVERTER.get(),
                     PSGBlocks.MINI_INVERTER.get()).build(null));
 
     private static BlockEntityType<VoltageRelayBlockEntity> relayType() {

@@ -300,6 +300,7 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
                 setChanged();
             }
         }
+        boolean off = isTripped();
         Component line1 = off
                 ? Component.translatable(PowerSafeGrid.MOD_ID + ".display.off").withStyle(ChatFormatting.RED)
                 : Component.translatable(PowerSafeGrid.MOD_ID + ".display.output")

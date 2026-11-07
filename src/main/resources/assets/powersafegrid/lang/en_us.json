@@ -61,5 +61,6 @@
   "powersafegrid.goggles.inverter.input": "Input voltage: ",
   "powersafegrid.goggles.inverter.output": "Output voltage: ",
   "powersafegrid.goggles.inverter.current": "Output current: ",
-  "powersafegrid.goggles.inverter.max_input": "Max input: "
+  "powersafegrid.goggles.inverter.max_input": "Max input: ",
+  "powersafegrid.tooltip.inverter.4": "Visually occupies 2x2x2, extending towards +X/+Y/+Z."
 }

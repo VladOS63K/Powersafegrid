@@ -5,7 +5,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -15,42 +14,38 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireConnection;
-import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.powersafegrid.PowerSafeGrid;
 
 import java.util.List;
 
 /**
- * Adjustable autotransformer. Two variants share this block class: a compact
- * single-block device and a big 2x2x2 multiblock. The multiblock forms
- * automatically once eight blocks make up a full cube; the lowest corner
- * becomes the controller that owns the electric circuit, and wire terminals
- * stick out of the assembled cube's front and back faces.
+ * Adjustable autotransformer rendered as a 2x2x2 machine. Occupies a single
+ * block cell; the model extends towards +X/+Y/+Z for visuals only. Converts
+ * the input voltage (up to the rated maximum) to 0-100 % of it, selected with
+ * a scroll value box. Protection mirrors the stabilizer: moderate overvoltage
+ * latches the device off, severe overvoltage (3x the rated maximum) burns it
+ * up, overcurrent smokes and latches off / explodes.
  */
 @MethodsReturnNonnullByDefault
 public class InverterBlock extends HorizontalElectricBlock implements IBE<InverterBlockEntity>, IAcceptCord {
 
-    public static final BooleanProperty CONTROLLER = BooleanProperty.create("controller");
     public static final BooleanProperty TRIPPED = BooleanProperty.create("tripped");
 
     public static final Component TERMINAL_INPUT_L = VoltageRelayBlock.TERMINAL_INPUT_L;
@@ -58,50 +53,45 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
     public static final Component TERMINAL_OUTPUT_L = VoltageRelayBlock.TERMINAL_OUTPUT_L;
     public static final Component TERMINAL_OUTPUT_N = VoltageRelayBlock.TERMINAL_OUTPUT_N;
 
-    /** Terminals of an assembled 2x2x2 multiblock: input on the back face, output on the front face. */
-    private static final TerminalBoundingBox[] MULTIBLOCK_TERMINALS_NORTH = new TerminalBoundingBox[] {
+    /** Terminals of the big variant: on the faces of the 2x2x2 visual cube. */
+    private static final TerminalBoundingBox[] BIG_TERMINALS_NORTH = new TerminalBoundingBox[] {
             new TerminalBoundingBox(TERMINAL_INPUT_L, 2, 5, -2, 5, 8, 2),
             new TerminalBoundingBox(TERMINAL_INPUT_N, 11, 5, -2, 14, 8, 2),
             new TerminalBoundingBox(TERMINAL_OUTPUT_L, 2, 5, 30, 5, 8, 34),
             new TerminalBoundingBox(TERMINAL_OUTPUT_N, 11, 5, 30, 14, 8, 34),
     };
 
-    /** Terminals of the compact single-block variant. */
-    private static final TerminalBoundingBox[] SINGLE_TERMINALS_NORTH = new TerminalBoundingBox[] {
+    /** Terminals of the compact variant: on its own back and front faces. */
+    private static final TerminalBoundingBox[] COMPACT_TERMINALS_NORTH = new TerminalBoundingBox[] {
             new TerminalBoundingBox(TERMINAL_INPUT_L, 2, 4, 14, 5, 7, 16),
             new TerminalBoundingBox(TERMINAL_INPUT_N, 11, 4, 14, 14, 7, 16),
             new TerminalBoundingBox(TERMINAL_OUTPUT_L, 2, 4, 0, 5, 7, 2),
             new TerminalBoundingBox(TERMINAL_OUTPUT_N, 11, 4, 0, 14, 7, 2),
     };
 
-    private static final VoxelShape SINGLE_SHAPE_NORTH = Shapes.or(
+    private static final VoxelShape COMPACT_SHAPE_NORTH = Shapes.or(
             Shapes.box(1 / 16.0, 0, 2 / 16.0, 15 / 16.0, 14 / 16.0, 14 / 16.0),
             Shapes.box(2 / 16.0, 4 / 16.0, 14 / 16.0, 5 / 16.0, 7 / 16.0, 1),
             Shapes.box(11 / 16.0, 4 / 16.0, 14 / 16.0, 14 / 16.0, 7 / 16.0, 1),
             Shapes.box(2 / 16.0, 4 / 16.0, 0, 5 / 16.0, 7 / 16.0, 2 / 16.0),
             Shapes.box(11 / 16.0, 4 / 16.0, 0, 14 / 16.0, 7 / 16.0, 2 / 16.0));
 
-    public InverterBlock(Properties properties, boolean multiblock, float maxInput, float overloadCurrent, float explodeCurrent) {
-        super(properties);
-        this.multiblock = multiblock;
-        this.maxInput = maxInput;
-        this.overloadCurrent = overloadCurrent;
-        this.explodeCurrent = explodeCurrent;
-        if (multiblock) {
-            setTerminalCollection(horizontalNorthTerminals(this, MULTIBLOCK_TERMINALS_NORTH, Shapes.block()));
-        } else {
-            registerDefaultState(defaultBlockState().setValue(CONTROLLER, true));
-            setTerminalCollection(horizontalNorthTerminals(this, SINGLE_TERMINALS_NORTH, SINGLE_SHAPE_NORTH));
-        }
-    }
-
-    private final boolean multiblock;
+    private final boolean big;
     private final float maxInput;
     private final float overloadCurrent;
     private final float explodeCurrent;
 
-    public boolean isMultiblock() {
-        return multiblock;
+    public InverterBlock(Properties properties, boolean big, float maxInput, float overloadCurrent, float explodeCurrent) {
+        super(properties);
+        this.big = big;
+        this.maxInput = maxInput;
+        this.overloadCurrent = overloadCurrent;
+        this.explodeCurrent = explodeCurrent;
+        if (big) {
+            setTerminalCollection(horizontalNorthTerminals(this, BIG_TERMINALS_NORTH, Shapes.block()));
+        } else {
+            setTerminalCollection(horizontalNorthTerminals(this, COMPACT_TERMINALS_NORTH, COMPACT_SHAPE_NORTH));
+        }
     }
 
     public float getMaxInput() {
@@ -116,176 +106,20 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
         return explodeCurrent;
     }
 
-    public boolean isController(BlockState state) {
-        return !multiblock || state.getValue(CONTROLLER);
-    }
-
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        // CONTROLLER must be added unconditionally: this method runs from the
-        // super constructor, before the multiblock field is assigned.
-        builder.add(CONTROLLER);
         builder.add(TRIPPED);
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable net.minecraft.world.entity.LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
-        // Auto-build the 2x2x2 cube from a single placement: the placed block
-        // becomes the controller and the remaining 7 positions are filled with
-        // shells (when there is room).
-        if (!multiblock || level.isClientSide || !(level instanceof ServerLevel server))
-            return;
-        for (int x = 0; x < 2; x++) {
-            for (int y = 0; y < 2; y++) {
-                for (int z = 0; z < 2; z++) {
-                    if (x == 0 && y == 0 && z == 0)
-                        continue;
-                    if (!level.getBlockState(pos.offset(x, y, z)).canBeReplaced()) {
-                        PowerSafeGrid.LOGGER.info("Inverter at {} could not auto-build: no room at +X/+Y/+Z",
-                                pos.toShortString());
-                        return;
-                    }
-                }
-            }
-        }
-        for (int x = 0; x < 2; x++) {
-            for (int y = 0; y < 2; y++) {
-                for (int z = 0; z < 2; z++) {
-                    if (x == 0 && y == 0 && z == 0)
-                        continue;
-                    level.setBlock(pos.offset(x, y, z), state.setValue(CONTROLLER, false), 3);
-                }
-            }
-        }
-        level.setBlock(pos, state.setValue(CONTROLLER, true), 3);
-        if (level.getBlockEntity(pos) instanceof InverterBlockEntity be)
-            be.onControllerChanged();
-    }
-
-    @Override
-    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (multiblock && !level.isClientSide && !oldState.is(this))
-            level.scheduleTick(pos, this, 1);
-    }
-
-    @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
-        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
-        if (multiblock && !level.isClientSide)
-            level.scheduleTick(pos, this, 1);
-    }
-
-    @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (multiblock && state.is(this) && !newState.is(this) && level instanceof ServerLevel server)
-            updateFormation(server, pos);
-        super.onRemove(state, level, pos, newState, movedByPiston);
-    }
-
-    @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
-        updateFormation(level, pos);
-    }
-
-    /**
-     * Re-evaluates multiblock formation around {@code pos}. A cube is complete
-     * when all 8 positions of a 2x2x2 section hold multiblock converter blocks.
-     * The lowest corner becomes the controller. An existing controller is kept
-     * as long as its own cube is complete, so leftover blocks next to a formed
-     * cube can never steal or demote it.
-     */
-    public void updateFormation(ServerLevel level, BlockPos pos) {
-        BlockPos min = pos.subtract(new BlockPos(1, 1, 1));
-        for (int x = 0; x < 3; x++) {
-            for (int y = 0; y < 3; y++) {
-                for (int z = 0; z < 3; z++) {
-                    BlockPos p = min.offset(x, y, z);
-                    BlockState s = level.getBlockState(p);
-                    if (!(s.getBlock() instanceof InverterBlock block) || !block.multiblock)
-                        continue;
-                    boolean current = s.getValue(CONTROLLER);
-                    boolean shouldBe;
-                    if (current) {
-                        // Keep an existing controller while its own cube is complete.
-                        shouldBe = findCubeAnchor(level, p) != null;
-                    } else {
-                        // Unclaimed block: becomes the controller of the complete
-                        // section containing it, if this position is its anchor.
-                        BlockPos anchor = findCubeAnchor(level, p);
-                        shouldBe = anchor != null && p.equals(anchor);
-                    }
-                    if (current != shouldBe) {
-                        level.setBlock(p, s.setValue(CONTROLLER, shouldBe), 3);
-                        if (level.getBlockEntity(p) instanceof InverterBlockEntity be)
-                            be.onControllerChanged();
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * @return the lowest corner of a complete 2x2x2 converter cube containing
-     * {@code pos}, or null if none is complete.
-     */
-    public BlockPos findCubeAnchor(ServerLevel level, BlockPos pos) {
-        for (int dx = 1; dx >= 0; dx--) {
-            for (int dy = 1; dy >= 0; dy--) {
-                for (int dz = 1; dz >= 0; dz--) {
-                    BlockPos anchor = pos.subtract(new BlockPos(dx, dy, dz));
-                    if (isCompleteCube(level, anchor))
-                        return anchor;
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean isCompleteCube(ServerLevel level, BlockPos anchor) {
-        for (int x = 0; x < 2; x++) {
-            for (int y = 0; y < 2; y++) {
-                for (int z = 0; z < 2; z++) {
-                    BlockPos p = anchor.offset(x, y, z);
-                    BlockState s = level.getBlockState(p);
-                    if (!(s.getBlock() instanceof InverterBlock block) || !block.multiblock)
-                        return false;
-                    // A block that is the controller of another cube section cannot join this one.
-                    if (s.getValue(CONTROLLER) && !p.equals(anchor))
-                        return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
-        // Forward terminal clicks on multiblock shells to the controller.
-        if (multiblock) {
-            var level = context.getLevel();
-            var clicked = context.getClickedPos();
-            BlockPos controllerPos = null;
-            if (level instanceof ServerLevel server)
-                controllerPos = findCubeAnchor(server, clicked);
-            if (controllerPos != null && !controllerPos.equals(clicked)) {
-                var hit = new BlockHitResult(context.getClickLocation(), context.getClickedFace(), controllerPos, false);
-                var remapped = new UseOnContext(level, context.getPlayer(), context.getHand(), context.getItemInHand(), hit);
-                var controllerState = level.getBlockState(controllerPos);
-                if (controllerState.getBlock() instanceof InverterBlock)
-                    return onWireAt(controllerState, remapped);
-                return InteractionResult.PASS;
-            }
-        }
         return onWireAt(state, context);
     }
 
     /**
-     * Faithful copy of {@code IElectric.onWire}, with the wire endpoint bound
-     * to the block position of the passed-in state (the multiblock controller
-     * for shell clicks).
+     * Faithful copy of {@code IElectric.onWire} (the interface is only inherited
+     * indirectly here, so {@code IElectric.super} is not available).
      */
     private InteractionResult onWireAt(BlockState state, UseOnContext context) {
         var stack = context.getItemInHand();
@@ -320,46 +154,24 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
     }
 
     @Override
-    public AutoCordEndpoint getEndpoint(UseOnContext context) {
-        // Power cords plug into the assembled cube's back face and must be
-        // bound to the controller's terminals, not to a shell block.
-        if (multiblock) {
-            var level = context.getLevel();
-            var clicked = context.getClickedPos();
-            BlockPos controllerPos = null;
-            if (level instanceof ServerLevel server)
-                controllerPos = findCubeAnchor(server, clicked);
-            if (controllerPos != null && !controllerPos.equals(clicked)) {
-                var loc = context.getClickLocation().relative(context.getClickedFace(), 3 / 16f);
-                return new AutoCordEndpoint(controllerPos, 0, 1, loc, context.getClickedFace());
-            }
-        }
-        return IAcceptCord.super.getEndpoint(context);
-    }
-
-    @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         ITerminalPlacement terminal = terminalAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if (terminal != null)
             return InteractionResult.PASS;
         if (!PSGTools.isResetTool(player.getItemInHand(hand)))
             return InteractionResult.PASS;
-        if (!world.isClientSide) {
-            BlockPos target = pos;
-            if (multiblock && world instanceof ServerLevel server) {
-                var controllerPos = findCubeAnchor(server, pos);
-                if (controllerPos != null)
-                    target = controllerPos;
-            }
-            if (world.getBlockEntity(target) instanceof InverterBlockEntity inverter && inverter.isTripped())
-                inverter.reset();
-        }
+        if (!world.isClientSide && world.getBlockEntity(pos) instanceof InverterBlockEntity inverter && inverter.isTripped())
+            inverter.reset();
         return InteractionResult.SUCCESS;
+    }
+
+    public boolean isBig() {
+        return big;
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return multiblock ? Shapes.block() : super.getShape(state, level, pos, context);
+        return big ? Shapes.block() : super.getShape(state, level, pos, context);
     }
 
     @Override
@@ -376,8 +188,7 @@ public class InverterBlock extends HorizontalElectricBlock implements IBE<Invert
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.inverter.1",
                 String.format("%.0f", maxInput)).withStyle(ChatFormatting.GRAY));
-        if (multiblock)
-            tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.inverter.2").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.inverter.4").withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.inverter.3",
                 String.format("%.0f", overloadCurrent), String.format("%.0f", explodeCurrent)).withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.translatable(PowerSafeGrid.MOD_ID + ".tooltip.reset").withStyle(ChatFormatting.AQUA));

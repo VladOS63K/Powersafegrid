@@ -52,7 +52,6 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
         public static final Status[] VALUES = values();
     }
 
-    private final boolean multiblock;
     private final float maxInput;
     private final float overloadCurrent;
     private final float explodeCurrent;
@@ -79,17 +78,14 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
     private Status clientStatus = Status.RUNNING;
     private boolean clientBurning;
     private int syncTimer;
-    private int formationCheckDelay = 5;
 
     public InverterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         if (state.getBlock() instanceof InverterBlock block) {
-            multiblock = block.isMultiblock();
             maxInput = block.getMaxInput();
             overloadCurrent = block.getOverloadCurrent();
             explodeCurrent = block.getExplodeCurrent();
         } else {
-            multiblock = false;
             maxInput = 4000f;
             overloadCurrent = 60f;
             explodeCurrent = 100f;
@@ -100,8 +96,6 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
         electricBehaviour.reducedSync();
-        if (!isController())
-            return;
         percentSetting = new ScrollValueBehaviour(
                 Component.translatable(PowerSafeGrid.MOD_ID + ".devices.inverter.setting"),
                 this, new BoxTransform())
@@ -109,22 +103,6 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
                 .withFormatter(i -> i + " %");
         percentSetting.value = 100;
         behaviours.add(percentSetting);
-    }
-
-    /** Whether this block entity actually owns the electric circuit. */
-    public boolean isController() {
-        return !multiblock || getBlockState().getValue(InverterBlock.CONTROLLER);
-    }
-
-    /** Called by the block when the multiblock controller flag flips. */
-    public void onControllerChanged() {
-        if (level != null && !level.isClientSide) {
-            ModdedSoundEvents.CONTACTOR_OFF.playOnServer(level, worldPosition, 0.7f, 1.4f);
-            PowerSafeGrid.LOGGER.info("Inverter at {} controller={}", worldPosition.toShortString(),
-                    getBlockState().getValue(InverterBlock.CONTROLLER));
-        }
-        electricBehaviour.rebuildCircuit(true);
-        notifyUpdate();
     }
 
     public float getPercent() {
@@ -285,13 +263,6 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
             }
             return;
         }
-        // Safety net: re-evaluate multiblock formation shortly after (re)loading,
-        // in case a placement/removal update was missed.
-        if (formationCheckDelay > 0 && --formationCheckDelay == 0
-                && getBlockState().getBlock() instanceof InverterBlock block && block.isMultiblock()
-                && level instanceof net.minecraft.server.level.ServerLevel server) {
-            block.updateFormation(server, worldPosition);
-        }
         if (++syncTimer >= 4) {
             syncTimer = 0;
             sendData();
@@ -424,11 +395,6 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        if (!isController()) {
-            // A dormant multiblock shell: no circuit at all.
-            builder.setTerminalCount(0);
-            return;
-        }
         builder.setTerminalCount(4);
         primed = false;
         boolean closed = !getBlockState().getValue(InverterBlock.TRIPPED) && status == Status.RUNNING;

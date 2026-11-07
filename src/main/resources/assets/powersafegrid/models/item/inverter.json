@@ -1,1 +1,3 @@
-{"parent": "powersafegrid:block/inverter_controller"}
+{
+  "parent": "powersafegrid:block/mini_inverter"
+}

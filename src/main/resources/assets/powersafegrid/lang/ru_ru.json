@@ -61,5 +61,6 @@
   "powersafegrid.goggles.inverter.input": "Входное напряжение: ",
   "powersafegrid.goggles.inverter.output": "Выходное напряжение: ",
   "powersafegrid.goggles.inverter.current": "Ток выхода: ",
-  "powersafegrid.goggles.inverter.max_input": "Макс. вход: "
+  "powersafegrid.goggles.inverter.max_input": "Макс. вход: ",
+  "powersafegrid.tooltip.inverter.4": "Визуально занимает 2×2×2 в сторону +X/+Y/+Z."
 }

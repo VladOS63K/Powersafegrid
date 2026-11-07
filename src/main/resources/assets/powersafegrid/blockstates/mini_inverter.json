@@ -1,32 +1,32 @@
 {
   "variants": {
-    "controller=true,facing=north,tripped=false": {
+    "facing=north,tripped=false": {
       "model": "powersafegrid:block/mini_inverter"
     },
-    "controller=true,facing=north,tripped=true": {
+    "facing=north,tripped=true": {
       "model": "powersafegrid:block/mini_inverter_tripped"
     },
-    "controller=true,facing=east,tripped=false": {
+    "facing=east,tripped=false": {
       "model": "powersafegrid:block/mini_inverter",
       "y": 90
     },
-    "controller=true,facing=east,tripped=true": {
+    "facing=east,tripped=true": {
       "model": "powersafegrid:block/mini_inverter_tripped",
       "y": 90
     },
-    "controller=true,facing=south,tripped=false": {
+    "facing=south,tripped=false": {
       "model": "powersafegrid:block/mini_inverter",
       "y": 180
     },
-    "controller=true,facing=south,tripped=true": {
+    "facing=south,tripped=true": {
       "model": "powersafegrid:block/mini_inverter_tripped",
       "y": 180
     },
-    "controller=true,facing=west,tripped=false": {
+    "facing=west,tripped=false": {
       "model": "powersafegrid:block/mini_inverter",
       "y": 270
     },
-    "controller=true,facing=west,tripped=true": {
+    "facing=west,tripped=true": {
       "model": "powersafegrid:block/mini_inverter_tripped",
       "y": 270
     }

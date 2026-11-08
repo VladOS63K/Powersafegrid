@@ -269,7 +269,7 @@ public class PanelBlockEntity extends ElectricBlockEntity implements IHaveGoggle
 
     @Override
     public void electricalTick() {
-        if (level.isClientSide || slotWires == null)
+        if (level.isClientSide || slotWires == null || slotWires.length != slotCount)
             return;
         applyPower(slotWires[0]);
 
@@ -433,11 +433,16 @@ public class PanelBlockEntity extends ElectricBlockEntity implements IHaveGoggle
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        builder.setTerminalCount(slotCount * 2);
-        slotWires = new SwitchedWire[slotCount];
-        for (int i = 0; i < slotCount; i++) {
-            var module = modules[i];
-            boolean closed = module != PanelModule.EMPTY && !tripped[i] && !manualOff[i]
+        // buildCircuit can run from the super constructor, before the fields
+        // are initialized: derive the count from the block state and treat the
+        // module storage as empty while it is still null.
+        int n = getBlockState().getBlock() instanceof PanelBlock panel ? panel.getSlotCount() : slotCount;
+        builder.setTerminalCount(n * 2);
+        slotWires = new SwitchedWire[n];
+        for (int i = 0; i < n; i++) {
+            var module = modules != null && i < modules.length ? modules[i] : PanelModule.EMPTY;
+            boolean closed = module != PanelModule.EMPTY && !(tripped != null && tripped[i])
+                    && !(manualOff != null && manualOff[i])
                     && (module != PanelModule.RELAY || (relayClosed && !relayOverloaded));
             if (module == PanelModule.EMPTY) {
                 slotWires[i] = null;

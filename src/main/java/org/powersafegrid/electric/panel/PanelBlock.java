@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.powersafegrid.PowerSafeGrid;
 import org.powersafegrid.electric.PSGBlockEntities;
 import org.powersafegrid.electric.PSGItems;
+import org.powersafegrid.electric.PSGTools;
 import org.powersafegrid.electric.VoltageRelayBlock;
 
 import java.util.List;

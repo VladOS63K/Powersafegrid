@@ -26,6 +26,12 @@ public class PSGCreativeTab {
                         output.accept(PSGBlocks.CREATIVE_STABILIZER_120.get());
                         output.accept(PSGBlocks.CREATIVE_STABILIZER_240.get());
                         output.accept(PSGBlocks.MINI_INVERTER.get());
+                        output.accept(PSGBlocks.PANEL_5.get());
+                        output.accept(PSGBlocks.PANEL_10.get());
+                        output.accept(PSGItems.BREAKER_8A.get());
+                        output.accept(PSGItems.BREAKER_10A.get());
+                        output.accept(PSGItems.BREAKER_16A.get());
+                        output.accept(PSGItems.BREAKER_63A.get());
                     })
                     .build());
 

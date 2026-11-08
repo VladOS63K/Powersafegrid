@@ -39,6 +39,16 @@ public class PSGBlockEntities {
                     (pos, state) -> new InverterBlockEntity(inverterType(), pos, state),
                     PSGBlocks.MINI_INVERTER.get()).build(null));
 
+    public static final Supplier<BlockEntityType<org.powersafegrid.electric.panel.PanelBlockEntity>> PANEL =
+            BLOCK_ENTITIES.register("panel", () -> BlockEntityType.Builder.of(
+                    (pos, state) -> new org.powersafegrid.electric.panel.PanelBlockEntity(panelType(), pos, state),
+                    PSGBlocks.PANEL_5.get(),
+                    PSGBlocks.PANEL_10.get()).build(null));
+
+    private static BlockEntityType<org.powersafegrid.electric.panel.PanelBlockEntity> panelType() {
+        return PANEL.get();
+    }
+
     private static BlockEntityType<VoltageRelayBlockEntity> relayType() {
         return VOLTAGE_RELAY.get();
     }

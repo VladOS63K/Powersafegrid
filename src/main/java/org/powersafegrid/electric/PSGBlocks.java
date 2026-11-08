@@ -35,6 +35,12 @@ public class PSGBlocks {
     public static final DeferredBlock<AutoStabilizerBlock> AUTO_STABILIZER_240 =
             BLOCKS.register("auto_stabilizer_240", () -> new AutoStabilizerBlock(properties(), 240f, 190f, 250f));
 
+    public static final DeferredBlock<org.powersafegrid.electric.panel.PanelBlock> PANEL_5 =
+            BLOCKS.register("panel_5", () -> new org.powersafegrid.electric.panel.PanelBlock(properties(), 5));
+
+    public static final DeferredBlock<org.powersafegrid.electric.panel.PanelBlock> PANEL_10 =
+            BLOCKS.register("panel_10", () -> new org.powersafegrid.electric.panel.PanelBlock(properties(), 10));
+
     public static final DeferredBlock<InverterBlock> MINI_INVERTER =
             BLOCKS.register("mini_inverter", () -> new InverterBlock(properties(), 1000f, 15f, 25f));
 

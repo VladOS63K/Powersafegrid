@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powersafegrid:block/panel_5"
+    },
+    "facing=east": {
+      "model": "powersafegrid:block/panel_5",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powersafegrid:block/panel_5",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powersafegrid:block/panel_5",
+      "y": 270
+    }
+  }
+}

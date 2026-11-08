@@ -32,12 +32,13 @@ public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockE
                 continue;
             double lx = (i + 0.5) / slots - 0.5;
             // front face of the thin slab (flush against the wall behind it)
+            // Just outside the front face of the slab, centered per slot.
             var offset = switch (facing) {
-                case NORTH -> new net.minecraft.world.phys.Vec3(lx, 0.5, -0.47);
-                case SOUTH -> new net.minecraft.world.phys.Vec3(-lx, 0.5, 0.47);
-                case WEST -> new net.minecraft.world.phys.Vec3(-0.47, 0.5, lx);
-                case EAST -> new net.minecraft.world.phys.Vec3(0.47, 0.5, -lx);
-                default -> new net.minecraft.world.phys.Vec3(lx, 0.5, -0.47);
+                case NORTH -> new net.minecraft.world.phys.Vec3(lx, 0.5, -0.51);
+                case SOUTH -> new net.minecraft.world.phys.Vec3(-lx, 0.5, 0.51);
+                case WEST -> new net.minecraft.world.phys.Vec3(-0.51, 0.5, lx);
+                case EAST -> new net.minecraft.world.phys.Vec3(0.51, 0.5, -lx);
+                default -> new net.minecraft.world.phys.Vec3(lx, 0.5, -0.51);
             };
             float yRot = switch (facing) {
                 case NORTH -> 180f;
@@ -52,7 +53,9 @@ public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockE
                     panel.getBlockPos().getY() + offset.y,
                     panel.getBlockPos().getZ() + 0.5 + offset.z);
             poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(yRot));
-            poseStack.scale(0.35f, 0.35f, 0.35f);
+            poseStack.scale(0.4f, 0.4f, 0.4f);
+            // Center the unit-sized item model on the anchor point.
+            poseStack.translate(-0.5F, -0.5F, -0.5F);
             int slotLight = LevelRenderer.getLightColor(level, panel.getBlockPos());
             itemRenderer.renderStatic(stack, ItemDisplayContext.FIXED, slotLight,
                     net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,

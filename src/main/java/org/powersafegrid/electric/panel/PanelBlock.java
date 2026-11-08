@@ -4,13 +4,16 @@ import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -50,7 +53,8 @@ public class PanelBlock extends HorizontalElectricBlock implements IBE<PanelBloc
     private final int slots;
 
     private static VoxelShape shape() {
-        return Shapes.block();
+        // Thin vertical panel flush against the back of the block cell.
+        return Shapes.box(0, 0, 0, 1, 1, 0.25);
     }
 
     private static TerminalBoundingBox[] terminals(int slots) {
@@ -58,8 +62,8 @@ public class PanelBlock extends HorizontalElectricBlock implements IBE<PanelBloc
         for (int i = 0; i < slots; i++) {
             double x0 = i * 16.0 / slots;
             double x1 = (i + 1) * 16.0 / slots;
-            list[2 * i] = new TerminalBoundingBox(TERMINAL_IN, x0, 14, 7, x1, 16, 9);
-            list[2 * i + 1] = new TerminalBoundingBox(TERMINAL_OUT, x0, 0, 7, x1, 2, 9);
+            list[2 * i] = new TerminalBoundingBox(TERMINAL_IN, x0, 14, 0, x1, 16, 4);
+            list[2 * i + 1] = new TerminalBoundingBox(TERMINAL_OUT, x0, 0, 0, x1, 2, 4);
         }
         return list;
     }
@@ -68,6 +72,15 @@ public class PanelBlock extends HorizontalElectricBlock implements IBE<PanelBloc
         super(properties);
         this.slots = slots;
         setTerminalCollection(horizontalNorthTerminals(this, terminals(slots), shape()));
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var face = ctx.getClickedFace();
+        Direction facing = face.getAxis() == Direction.Axis.Y
+                ? ctx.getHorizontalDirection()
+                : face;
+        return defaultBlockState().setValue(HORIZONTAL_FACING, facing);
     }
 
     public int getSlotCount() {
@@ -84,7 +97,7 @@ public class PanelBlock extends HorizontalElectricBlock implements IBE<PanelBloc
         var held = player.getItemInHand(hand);
         ITerminalPlacement terminal = terminalAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         int terminalIndex = terminal != null ? terminalIndexAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ())) : -1;
-        int clickedSlot = terminalIndex >= 0 ? terminalIndex / 2 : -1;
+        int clickedSlot = terminalIndex >= 0 ? terminalIndex / 2 : frontSlotAt(state, pos, hit);
 
         if (!(world.getBlockEntity(pos) instanceof PanelBlockEntity panel))
             return InteractionResult.PASS;
@@ -147,6 +160,29 @@ public class PanelBlock extends HorizontalElectricBlock implements IBE<PanelBloc
         if (terminal != null)
             return InteractionResult.PASS;
         return InteractionResult.PASS;
+    }
+
+    /** Slot index under the cursor when the panel's front face is clicked. */
+    private int frontSlotAt(BlockState state, BlockPos pos, BlockHitResult hit) {
+        var local = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+        var facing = state.getValue(HORIZONTAL_FACING);
+        boolean onFront = switch (facing) {
+            case NORTH -> local.z < 0.3;
+            case SOUTH -> local.z > 0.7;
+            case WEST -> local.x < 0.3;
+            case EAST -> local.x > 0.7;
+            default -> false;
+        };
+        if (!onFront || local.y < 0.15 || local.y > 0.95)
+            return -1;
+        double along = switch (facing) {
+            case NORTH, EAST -> local.x;
+            default -> local.z;
+        };
+        int slot = Mth.clamp((int) (along * slots), 0, slots - 1);
+        if (facing == Direction.SOUTH || facing == Direction.WEST)
+            slot = slots - 1 - slot;
+        return slot;
     }
 
     @Override

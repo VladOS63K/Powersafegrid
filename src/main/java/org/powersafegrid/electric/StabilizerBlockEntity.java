@@ -423,13 +423,11 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         status = Status.VALUES[tag.getByte("Status") % Status.VALUES.length];
         ratio = tag.contains("Ratio") ? tag.getFloat("Ratio") : 1f;
         burnTimer = tag.contains("Burning") ? BURN_TICKS : -1;
-        if (clientPacket) {
-            clientUIn = tag.getFloat("ClUIn");
-            clientUOut = tag.getFloat("ClUOut");
-            clientIOut = tag.getFloat("ClIOut");
-            clientStatus = Status.VALUES[tag.getByte("ClStatus") % Status.VALUES.length];
-            clientBurning = tag.getBoolean("ClBurning");
-        }
+        clientUIn = tag.getFloat("ClUIn");
+        clientUOut = tag.getFloat("ClUOut");
+        clientIOut = tag.getFloat("ClIOut");
+        clientStatus = Status.VALUES[tag.getByte("ClStatus") % Status.VALUES.length];
+        clientBurning = tag.getBoolean("ClBurning");
         if (clientPacket && tag.getBoolean("Effect")) {
             playEffects = false;
             spawnTripEffects();
@@ -443,13 +441,11 @@ public class StabilizerBlockEntity extends ElectricBlockEntity implements IHaveG
         tag.putFloat("Ratio", ratio);
         if (burnTimer >= 0)
             tag.putBoolean("Burning", true);
-        if (clientPacket) {
-            tag.putFloat("ClUIn", (float) getInputVoltage());
-            tag.putFloat("ClUOut", (float) getOutputVoltage());
-            tag.putFloat("ClIOut", (float) getOutputCurrent());
-            tag.putByte("ClStatus", (byte) status.ordinal());
-            tag.putBoolean("ClBurning", burnTimer >= 0);
-        }
+        tag.putFloat("ClUIn", (float) getInputVoltage());
+        tag.putFloat("ClUOut", (float) getOutputVoltage());
+        tag.putFloat("ClIOut", (float) getOutputCurrent());
+        tag.putByte("ClStatus", (byte) status.ordinal());
+        tag.putBoolean("ClBurning", burnTimer >= 0);
         if (playEffects) {
             tag.putBoolean("Effect", true);
             playEffects = false;

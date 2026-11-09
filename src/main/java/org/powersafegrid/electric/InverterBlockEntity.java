@@ -413,13 +413,11 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
         ratio = tag.contains("Ratio") ? tag.getFloat("Ratio") : 1f;
         burnTimer = tag.contains("Burning") ? BURN_TICKS : -1;
         displayId = tag.hasUUID("DisplayId") ? tag.getUUID("DisplayId") : null;
-        if (clientPacket) {
-            clientUIn = tag.getFloat("ClUIn");
-            clientUOut = tag.getFloat("ClUOut");
-            clientIOut = tag.getFloat("ClIOut");
-            clientStatus = Status.VALUES[tag.getByte("ClStatus") % Status.VALUES.length];
-            clientBurning = tag.getBoolean("ClBurning");
-        }
+        clientUIn = tag.getFloat("ClUIn");
+        clientUOut = tag.getFloat("ClUOut");
+        clientIOut = tag.getFloat("ClIOut");
+        clientStatus = Status.VALUES[tag.getByte("ClStatus") % Status.VALUES.length];
+        clientBurning = tag.getBoolean("ClBurning");
         if (clientPacket && tag.getBoolean("Effect")) {
             playEffects = false;
             spawnTripEffects();
@@ -435,13 +433,11 @@ public class InverterBlockEntity extends ElectricBlockEntity implements IHaveGog
             tag.putBoolean("Burning", true);
         if (displayId != null)
             tag.putUUID("DisplayId", displayId);
-        if (clientPacket) {
-            tag.putFloat("ClUIn", (float) getInputVoltage());
-            tag.putFloat("ClUOut", (float) getOutputVoltage());
-            tag.putFloat("ClIOut", (float) getOutputCurrent());
-            tag.putByte("ClStatus", (byte) status.ordinal());
-            tag.putBoolean("ClBurning", burnTimer >= 0);
-        }
+        tag.putFloat("ClUIn", (float) getInputVoltage());
+        tag.putFloat("ClUOut", (float) getOutputVoltage());
+        tag.putFloat("ClIOut", (float) getOutputCurrent());
+        tag.putByte("ClStatus", (byte) status.ordinal());
+        tag.putBoolean("ClBurning", burnTimer >= 0);
         if (playEffects) {
             tag.putBoolean("Effect", true);
             playEffects = false;

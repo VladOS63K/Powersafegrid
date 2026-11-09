@@ -24,7 +24,9 @@ public class PanelModuleBlock extends Block {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        if (breaker)
-            builder.add(RATING);
+        // Runs from the super constructor, before fields are assigned: the
+        // property must be added unconditionally (both module kinds have it;
+        // the relay blockstate maps all ratings to a single model).
+        builder.add(RATING);
     }
 }

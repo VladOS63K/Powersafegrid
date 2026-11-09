@@ -17,6 +17,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.powersafegrid.PowerSafeGrid;
+import org.powersafegrid.electric.PSGBlocks;
 import org.powersafegrid.electric.PSGItems;
 import org.powersafegrid.electric.VoltageRelayBlockEntity;
 

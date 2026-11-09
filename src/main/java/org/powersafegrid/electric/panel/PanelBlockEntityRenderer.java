@@ -35,7 +35,8 @@ public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockE
             // Slot center across the panel, relative to the pose origin (the
             // block's lower corner). The module sits ~0.2 blocks in front of
             // the panel's front face.
-            double lx = (i + span / 2.0) / slots - 0.5;
+            // Slot 1 is the rightmost column as seen from the front.
+            double lx = 0.5 - (i + span / 2.0) / slots;
             double ox = switch (facing) {
                 case NORTH, SOUTH -> 0.5 + lx;
                 case WEST -> -0.2;

@@ -49,9 +49,9 @@ public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockE
             };
 
             poseStack.pushPose();
-            poseStack.translate(panel.getBlockPos().getX() + 0.5 + offset.x,
-                    panel.getBlockPos().getY() + offset.y,
-                    panel.getBlockPos().getZ() + 0.5 + offset.z);
+            // The dispatcher already translates the pose stack to the block
+            // center; only apply the slot offset here.
+            poseStack.translate(offset.x, offset.y, offset.z);
             poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(yRot));
             poseStack.scale(0.4f, 0.4f, 0.4f);
             // Center the unit-sized item model on the anchor point.

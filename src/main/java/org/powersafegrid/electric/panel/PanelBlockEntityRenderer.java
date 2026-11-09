@@ -34,11 +34,11 @@ public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockE
             // front face of the thin slab (flush against the wall behind it)
             // Just outside the front face of the slab, centered per slot.
             var offset = switch (facing) {
-                case NORTH -> new net.minecraft.world.phys.Vec3(lx, 0.5, -0.51);
-                case SOUTH -> new net.minecraft.world.phys.Vec3(-lx, 0.5, 0.51);
-                case WEST -> new net.minecraft.world.phys.Vec3(-0.51, 0.5, lx);
-                case EAST -> new net.minecraft.world.phys.Vec3(0.51, 0.5, -lx);
-                default -> new net.minecraft.world.phys.Vec3(lx, 0.5, -0.51);
+                case NORTH -> new net.minecraft.world.phys.Vec3(lx, 0.0, -0.51);
+                case SOUTH -> new net.minecraft.world.phys.Vec3(-lx, 0.0, 0.51);
+                case WEST -> new net.minecraft.world.phys.Vec3(-0.51, 0.0, lx);
+                case EAST -> new net.minecraft.world.phys.Vec3(0.51, 0.0, -lx);
+                default -> new net.minecraft.world.phys.Vec3(lx, 0.0, -0.51);
             };
             float yRot = switch (facing) {
                 case NORTH -> 180f;

@@ -181,16 +181,19 @@ public class PanelBlockEntity extends ElectricBlockEntity implements IHaveGoggle
             return ItemStack.EMPTY;
         var module = modules[slot];
         if (module == PanelModule.RELAY) {
+            // The relay pair lives at (relaySlot, relaySlot+1): free both slots
+            // no matter which half the player extracts.
+            int start = relaySlot >= 0 && relaySlot < slotCount && modules[relaySlot] == PanelModule.RELAY
+                    ? relaySlot
+                    : (slot + 1 < slotCount && modules[slot + 1] == PanelModule.RELAY ? slot : slot - 1);
+            start = Mth.clamp(start, 0, slotCount - 2);
             relaySlot = -1;
-            modules[slot] = PanelModule.EMPTY;
-            if (slot + 1 < slotCount)
-                modules[slot + 1] = PanelModule.EMPTY;
-            tripped[slot] = false;
-            manualOff[slot] = false;
-            if (slot + 1 < slotCount) {
-                tripped[slot + 1] = false;
-                manualOff[slot + 1] = false;
-            }
+            modules[start] = PanelModule.EMPTY;
+            modules[start + 1] = PanelModule.EMPTY;
+            tripped[start] = false;
+            manualOff[start] = false;
+            tripped[start + 1] = false;
+            manualOff[start + 1] = false;
             ModdedSoundEvents.CONTACTOR_OFF.playOnServer(level, worldPosition, 0.7f, 0.8f);
         } else {
             modules[slot] = PanelModule.EMPTY;

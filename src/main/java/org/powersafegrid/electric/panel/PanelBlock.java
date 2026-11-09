@@ -179,10 +179,9 @@ public class PanelBlock extends HorizontalElectricBlock implements IBE<PanelBloc
             case NORTH, EAST -> local.x;
             default -> local.z;
         };
-        int slot = Mth.clamp((int) (along * slots), 0, slots - 1);
         if (facing == Direction.SOUTH || facing == Direction.WEST)
-            slot = slots - 1 - slot;
-        return slot;
+            along = 1 - along;
+        return Mth.clamp((int) (along * slots), 0, slots - 1);
     }
 
     @Override

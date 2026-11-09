@@ -60,6 +60,9 @@ public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockE
             poseStack.pushPose();
             poseStack.translate(ox, 0.5, oz);
             poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+            // Scale the module down on the 10-slot panel so it fits its slot.
+            float scale = slots > 5 ? 0.55f : 1.0f;
+            poseStack.scale(scale, scale, scale);
             int slotLight = LevelRenderer.getLightColor(level, panel.getBlockPos());
             blockRenderer.renderSingleBlock(state, poseStack, bufferSource, slotLight, overlay);
             poseStack.popPose();

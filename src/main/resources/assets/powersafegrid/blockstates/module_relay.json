@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powersafegrid:block/module_relay"
+    }
+  }
+}

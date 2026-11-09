@@ -152,6 +152,24 @@ public class PanelBlockEntity extends ElectricBlockEntity implements IHaveGoggle
         return modules[slot].stack();
     }
 
+    /** Block state of the module model to render in the given slot (null if empty). */
+    public BlockState getModuleState(int slot) {
+        if (slot < 0 || slot >= slotCount)
+            return null;
+        return switch (modules[slot]) {
+            case BREAKER_8 -> PSGBlocks.MODULE_BREAKER.get().defaultBlockState()
+                    .setValue(org.powersafegrid.electric.panel.PanelModuleBlock.RATING, 1);
+            case BREAKER_10 -> PSGBlocks.MODULE_BREAKER.get().defaultBlockState()
+                    .setValue(org.powersafegrid.electric.panel.PanelModuleBlock.RATING, 2);
+            case BREAKER_16 -> PSGBlocks.MODULE_BREAKER.get().defaultBlockState()
+                    .setValue(org.powersafegrid.electric.panel.PanelModuleBlock.RATING, 3);
+            case BREAKER_63 -> PSGBlocks.MODULE_BREAKER.get().defaultBlockState()
+                    .setValue(org.powersafegrid.electric.panel.PanelModuleBlock.RATING, 4);
+            case RELAY -> PSGBlocks.MODULE_RELAY.get().defaultBlockState();
+            default -> null;
+        };
+    }
+
     public void install(int slot, PanelModule module) {
         if (module == PanelModule.RELAY) {
             relaySlot = slot;

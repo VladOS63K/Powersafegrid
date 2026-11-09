@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "rating=1": {
+      "model": "powersafegrid:block/module_breaker_1"
+    },
+    "rating=2": {
+      "model": "powersafegrid:block/module_breaker_2"
+    },
+    "rating=3": {
+      "model": "powersafegrid:block/module_breaker_3"
+    },
+    "rating=4": {
+      "model": "powersafegrid:block/module_breaker_4"
+    }
+  }
+}

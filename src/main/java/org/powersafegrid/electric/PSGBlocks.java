@@ -41,6 +41,14 @@ public class PSGBlocks {
     public static final DeferredBlock<org.powersafegrid.electric.panel.PanelBlock> PANEL_10 =
             BLOCKS.register("panel_10", () -> new org.powersafegrid.electric.panel.PanelBlock(properties(), 10));
 
+    public static final DeferredBlock<org.powersafegrid.electric.panel.PanelModuleBlock> MODULE_BREAKER =
+            BLOCKS.register("module_breaker", () -> new org.powersafegrid.electric.panel.PanelModuleBlock(
+                    properties(), true));
+
+    public static final DeferredBlock<org.powersafegrid.electric.panel.PanelModuleBlock> MODULE_RELAY =
+            BLOCKS.register("module_relay", () -> new org.powersafegrid.electric.panel.PanelModuleBlock(
+                    properties(), false));
+
     public static final DeferredBlock<InverterBlock> MINI_INVERTER =
             BLOCKS.register("mini_inverter", () -> new InverterBlock(properties(), 1000f, 15f, 25f));
 

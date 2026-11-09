@@ -1,15 +1,16 @@
 package org.powersafegrid.electric.panel;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.ItemStack;
-import org.powersafegrid.electric.PSGBlockEntities;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import org.powersafegrid.electric.PSGBlocks;
 
 public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockEntity> {
 
@@ -23,46 +24,46 @@ public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockE
         var level = panel.getLevel();
         if (level == null)
             return;
-        var facing = panel.getBlockState().getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING);
-        var itemRenderer = Minecraft.getInstance().getItemRenderer();
+        var facing = panel.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
+        var blockRenderer = Minecraft.getInstance().getBlockRenderer();
 
         for (int i = 0; i < slots; i++) {
-            ItemStack stack = panel.getModuleStack(i);
-            if (stack.isEmpty())
+            BlockState state = panel.getModuleState(i);
+            if (state == null)
                 continue;
-            double lx = (i + 0.5) / slots - 0.5;
-            // front face of the thin slab (flush against the wall behind it)
-            // Relative to the pose origin, which is the block's lower corner
-            // (the dispatcher pre-translates by the block position only).
-            // Just outside the front face of the slab, centered per slot.
-            var offset = switch (facing) {
-                case NORTH -> new net.minecraft.world.phys.Vec3(lx, 0.5, -0.51);
-                case SOUTH -> new net.minecraft.world.phys.Vec3(-lx, 0.5, 0.51);
-                case WEST -> new net.minecraft.world.phys.Vec3(-0.51, 0.5, lx);
-                case EAST -> new net.minecraft.world.phys.Vec3(0.51, 0.5, -lx);
-                default -> new net.minecraft.world.phys.Vec3(lx, 0.5, -0.51);
+            int span = panel.getModule(i) == PanelBlockEntity.PanelModule.RELAY ? 2 : 1;
+            // Slot center across the panel, relative to the pose origin (the
+            // block's lower corner). The module sits ~0.2 blocks in front of
+            // the panel's front face.
+            double lx = (i + span / 2.0) / slots - 0.5;
+            double ox = switch (facing) {
+                case NORTH, SOUTH -> 0.5 + lx;
+                case WEST -> -0.2;
+                case EAST -> 1.2;
+                default -> 0.5 + lx;
+            };
+            double oz = switch (facing) {
+                case NORTH -> -0.2;
+                case SOUTH -> 1.2;
+                case WEST, EAST -> 0.5 + lx;
+                default -> 0.5 + lx;
             };
             float yRot = switch (facing) {
-                case NORTH -> 180f;
-                case SOUTH -> 0f;
+                case NORTH -> 0f;
+                case SOUTH -> 180f;
                 case WEST -> 270f;
                 case EAST -> 90f;
-                default -> 180f;
+                default -> 0f;
             };
 
             poseStack.pushPose();
-            // The dispatcher already translates the pose stack to the block
-            // center; only apply the slot offset here.
-            poseStack.translate(offset.x, offset.y, offset.z);
-            poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(yRot));
-            poseStack.scale(0.4f, 0.4f, 0.4f);
-            // Center the unit-sized item model on the anchor point.
-            poseStack.translate(-0.5F, -0.5F, -0.5F);
+            poseStack.translate(ox, 0.5, oz);
+            poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
             int slotLight = LevelRenderer.getLightColor(level, panel.getBlockPos());
-            itemRenderer.renderStatic(stack, ItemDisplayContext.FIXED, slotLight,
-                    net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
-                    poseStack, bufferSource, level, 0);
+            blockRenderer.renderSingleBlock(state, poseStack, bufferSource, slotLight, overlay);
             poseStack.popPose();
+            if (span == 2)
+                i++;
         }
     }
 }

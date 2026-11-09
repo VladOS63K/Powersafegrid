@@ -50,11 +50,11 @@ public class PanelBlockEntityRenderer implements BlockEntityRenderer<PanelBlockE
                 default -> 0.5 + lx;
             };
             float yRot = switch (facing) {
-                case NORTH -> 0f;
-                case SOUTH -> 180f;
-                case WEST -> 270f;
-                case EAST -> 90f;
-                default -> 0f;
+                case NORTH -> 180f;
+                case SOUTH -> 0f;
+                case WEST -> 90f;
+                case EAST -> 270f;
+                default -> 180f;
             };
 
             poseStack.pushPose();
